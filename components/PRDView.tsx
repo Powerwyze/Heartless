@@ -9,13 +9,13 @@ export const PRDView: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         <div className="flex justify-between items-center sticky top-0 bg-black py-4 z-10 border-b border-slate-800">
           <div className="flex items-center gap-4">
             <div className="w-3 h-3 bg-red-600 rounded-full animate-pulse"></div>
-            <h1 className="pixel-font text-2xl text-red-600 uppercase italic tracking-tighter">User Guide</h1>
+            <h1 className="pixel-font text-2xl text-[color:var(--theme-primary)] uppercase italic tracking-tighter">User Guide</h1>
           </div>
           <PixelButton onClick={onClose} color="red">CLOSE</PixelButton>
         </div>
 
         <section className="space-y-4">
-          <h2 className="pixel-font text-xl text-indigo-400 border-l-4 border-indigo-600 pl-4">What is Heartless?</h2>
+          <h2 className="pixel-font text-xl text-[color:var(--theme-primary)] border-l-4 border-[color:var(--theme-primary)] pl-4">What is Heartless?</h2>
           <div className="bg-slate-900 p-6 border-2 border-slate-800">
             <p className="leading-relaxed">
               <strong className="text-white uppercase">Heartless</strong> is a private diary to help you keep track of your relationships. 
@@ -25,7 +25,7 @@ export const PRDView: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         </section>
 
         <section className="space-y-4">
-          <h2 className="pixel-font text-xl text-indigo-400 border-l-4 border-indigo-600 pl-4">How to Use the App</h2>
+          <h2 className="pixel-font text-xl text-[color:var(--theme-primary)] border-l-4 border-[color:var(--theme-primary)] pl-4">How to Use the App</h2>
           <div className="space-y-6">
             
             <GuideCard 
@@ -51,7 +51,7 @@ export const PRDView: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         </section>
 
         <section className="space-y-4">
-          <h2 className="pixel-font text-xl text-indigo-400 border-l-4 border-indigo-600 pl-4">Privacy & Safety</h2>
+          <h2 className="pixel-font text-xl text-[color:var(--theme-primary)] border-l-4 border-[color:var(--theme-primary)] pl-4">Privacy & Safety</h2>
           <div className="bg-slate-900 border-2 border-slate-800 p-6 space-y-4 text-sm">
             <p><strong>Your Data is Private:</strong> Everything you type stays in this app. We don't share your diary with anyone.</p>
             <p><strong>Photo Safety:</strong> When you upload a photo, we strip out any hidden location data before we use it to make your character.</p>

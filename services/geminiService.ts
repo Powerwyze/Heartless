@@ -1,4 +1,5 @@
 import { GoogleGenAI, Type } from "@google/genai";
+import { uploadSprite, base64ToBlob } from './storageService';
 
 export class HeartlessAIService {
   private ai: GoogleGenAI;
@@ -7,7 +8,13 @@ export class HeartlessAIService {
     this.ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   }
 
-  async generateSprite(description: string, base64Image?: string, variant: string = "idle"): Promise<string> {
+  async generateSprite(
+    description: string,
+    userId: string,
+    partnerId: string,
+    base64Image?: string,
+    variant: string = "idle"
+  ): Promise<string> {
     const variantPrompts: Record<string, string> = {
       idle: "standing in a standard full-body pose, looking forward.",
       happy: "smiling with a full-body cheerful pose, small hearts or sparkles around.",
@@ -16,10 +23,10 @@ export class HeartlessAIService {
       dateNight: "wearing fancy full-body clothes for a formal night out."
     };
 
-    const prompt = `Create a full-body 16-bit pixel art character sprite. 
+    const prompt = `Create a full-body 16-bit pixel art character sprite.
     Style: Classic GameBoy Advance character art.
     Background: PURE SOLID WHITE BACKGROUND ONLY. NO CHECKERED PATTERNS. NO GRADIENTS.
-    Details: ${description}. 
+    Details: ${description}.
     State: ${variantPrompts[variant] || variantPrompts.idle}
     Rules: Strictly pixelated, vibrant retro colors, clear full-body silhouette. The character should be perfectly isolated on a solid white background.
     ${base64Image ? "Base the physical features (hair, build, clothing) on the provided image." : ""}`;
@@ -43,9 +50,15 @@ export class HeartlessAIService {
 
       for (const part of response.candidates?.[0]?.content?.parts || []) {
         if (part.inlineData) {
-          // Note: In a real world app we would use a canvas to make white transparent. 
-          // For now, we return the data and the UI will attempt to blend it.
-          return `data:image/png;base64,${part.inlineData.data}`;
+          // Convert base64 to blob
+          const base64Data = part.inlineData.data;
+          const blob = base64ToBlob(base64Data, 'image/png');
+
+          // Upload to Firebase Storage
+          const fileName = `${variant}_sprite.png`;
+          const storageUrl = await uploadSprite(userId, partnerId, blob, fileName);
+
+          return storageUrl;
         }
       }
       return 'https://picsum.photos/400/600?grayscale';

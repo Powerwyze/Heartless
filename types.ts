@@ -98,6 +98,17 @@ export interface Partner {
   interactionLog: InteractionLog[];
 }
 
+export interface AuthUser {
+  uid: string;
+  email: string | null;
+}
+
+export interface AuthState {
+  user: AuthUser | null;
+  isLoading: boolean;
+  error: string | null;
+}
+
 export interface AppState {
   partners: Partner[];
   selectedPartnerId: string | null;
@@ -106,4 +117,5 @@ export interface AppState {
   showScanner: boolean;
   showDamageModal: boolean;
   userSession: { id: string; email: string } | null;
+  isLoadingPartners: boolean;
 }

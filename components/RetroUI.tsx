@@ -8,9 +8,9 @@ export const PixelButton: React.FC<{
   disabled?: boolean
 }> = ({ onClick, children, variant = 'primary', className = '', disabled = false }) => {
   const styles = {
-    primary: 'bg-[#7000ff] hover:bg-[#8521ff] text-white shadow-[0_0_15px_rgba(112,0,255,0.4)]',
-    secondary: 'bg-white/5 hover:bg-white/10 text-white border border-white/10',
-    danger: 'bg-[#ff004c] hover:bg-[#ff3366] text-white shadow-[0_0_15px_rgba(255,0,76,0.4)]',
+    primary: 'bg-[#c084fc] hover:bg-[#d8b4fe] text-white shadow-[0_0_30px_rgba(192,132,252,0.8)] font-bold',
+    secondary: 'bg-white/20 hover:bg-white/30 text-white border border-white/30 font-bold',
+    danger: 'bg-[#fb7185] hover:bg-[#fda4af] text-white shadow-[0_0_30px_rgba(251,113,133,0.8)] font-bold',
   };
 
   return (
@@ -35,7 +35,7 @@ export const CompassionMeter: React.FC<{ current: number, max: number, big?: boo
       <svg 
         key={i} 
         viewBox="0 0 24 24" 
-        className={`${size} ${isActive ? 'text-[#ff007a] fill-[#ff007a] drop-shadow-[0_0_5px_rgba(255,0,122,0.8)]' : isHalf ? 'text-[#ff007a] fill-[#ff007a]/40' : 'text-white/10 fill-none'} transition-all`}
+        className={`${size} ${isActive ? 'text-[color:var(--theme-primary)] fill-[color:var(--theme-primary)] drop-shadow-[0_0_5px_var(--theme-primary-glow)]' : isHalf ? 'text-[color:var(--theme-primary)] fill-[color:var(--theme-primary)] opacity-40' : 'text-white/10 fill-none'} transition-all`}
       >
         <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" stroke="currentColor" strokeWidth="2" />
       </svg>
@@ -60,7 +60,7 @@ export const StatBar: React.FC<{ label: string, value: number, color?: string }>
 );
 
 export const TagPill: React.FC<{ children: string, variant?: 'cyan' | 'pink' }> = ({ children, variant = 'cyan' }) => (
-  <span className={`px-3 py-1 text-[10px] font-bold rounded-full border uppercase tracking-widest ${variant === 'cyan' ? 'border-[#00f2ff]/30 text-[#00f2ff] bg-[#00f2ff]/10' : 'border-[#ff007a]/30 text-[#ff007a] bg-[#ff007a]/10'}`}>
+  <span className={`px-3 py-1 text-[10px] font-bold rounded-full border uppercase tracking-widest ${variant === 'cyan' ? 'border-[#00f2ff]/30 text-[color:var(--theme-accent)] bg-[#00f2ff]/10' : 'border-[#ff007a]/30 text-[color:var(--theme-primary)] bg-[#ff007a]/10'}`}>
     {children}
   </span>
 );

@@ -1,0 +1,11 @@
+{
+  "firestore": {
+    "rules": "firestore.rules"
+  },
+  "storage": [
+    {
+      "bucket": "fnfwebapp.firebasestorage.app",
+      "rules": "storage.rules"
+    }
+  ]
+}
