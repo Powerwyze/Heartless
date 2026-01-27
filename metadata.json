@@ -1,0 +1,7 @@
+{
+  "name": "Heartless Partner Dex",
+  "description": "A retro-styled romantic partner tracking app combining Pokédex mechanics with Tamagotchi-style care monitoring. Features 16-bit sprite generation and AI-driven relationship health analysis.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
