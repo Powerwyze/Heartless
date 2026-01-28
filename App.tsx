@@ -639,12 +639,6 @@ const App: React.FC = () => {
           </div>
           {!isOnboarding && (
             <div className="flex items-center gap-4 flex-wrap">
-              <button 
-                onClick={() => setIsEditing(!isEditing)} 
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${isEditing ? 'bg-[#ff007a] text-white shadow-[0_0_15px_#ff007a/50]' : 'bg-white/5 text-white/60 hover:text-white hover:bg-white/10'}`}
-              >
-                {isEditing ? <><Save size={14}/> Save Changes</> : <><Edit2 size={14}/> Edit Profile</>}
-              </button>
               <div className="flex -space-x-3 overflow-x-auto" data-tutorial="partner-list">
                 {state.partners.map(p => (
                   <button key={p.id} onClick={() => setState(s => ({...s, selectedPartnerId: p.id}))} className={`w-10 h-10 rounded-full border-2 overflow-hidden transition-all hover:scale-110 active:scale-95 ${state.selectedPartnerId === p.id ? 'border-[#ff007a] ring-2 ring-[#ff007a]/20' : 'border-white/10 opacity-40 hover:opacity-100'}`}>
@@ -687,8 +681,15 @@ const App: React.FC = () => {
             <div className="flex-1 flex flex-col xl:flex-row p-4 md:p-10 gap-6 md:gap-10 overflow-hidden">
               {/* Profile Card Left */}
               <div className="w-full xl:w-80 flex flex-col gap-6 shrink-0">
-                <div className={`glass p-8 flex-1 flex flex-col items-center justify-center relative overflow-hidden transition-all duration-700 ${isTerminated ? 'border-red-600 grayscale bg-red-950/5 shadow-[0_0_40px_rgba(220,38,38,0.2)]' : 'border-white/5'}`}>
-                  <div className="relative w-full aspect-square flex items-center justify-center bg-white/5 rounded-3xl overflow-hidden">
+              <div className={`glass p-8 flex-1 flex flex-col items-center justify-center relative overflow-hidden transition-all duration-700 ${isTerminated ? 'border-red-600 grayscale bg-red-950/5 shadow-[0_0_40px_rgba(220,38,38,0.2)]' : 'border-white/5'}`}>
+                <button
+                  onClick={() => setIsEditing(!isEditing)}
+                  className={`absolute top-4 right-4 p-2 rounded-full border transition-colors ${isEditing ? 'border-[color:var(--theme-primary)] text-[color:var(--theme-primary)]' : 'border-[color:var(--theme-border)] text-white/60 hover:text-white hover:border-[color:var(--theme-primary)]'}`}
+                  aria-label={isEditing ? "Save changes" : "Edit profile"}
+                >
+                  {isEditing ? <Save size={14} /> : <Edit2 size={14} />}
+                </button>
+                <div className="relative w-full aspect-square flex items-center justify-center bg-white/5 rounded-3xl overflow-hidden">
                      <img src={selectedPartner.spriteUrl} className={`w-3/4 h-3/4 object-contain z-10 transition-all duration-700 ${isTerminated ? 'opacity-20 scale-90' : 'float-animation mix-blend-screen'}`} />
                      {isTerminated && (
                        <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none animate-in zoom-in duration-500">
@@ -711,8 +712,15 @@ const App: React.FC = () => {
                 </div>
                 
                 <div className={`glass p-6 space-y-4 transition-all duration-700 ${isTerminated ? 'bg-red-900/20 border-red-500/40' : 'border-white/5'}`}>
-                  <h4 className={`text-[10px] font-bold uppercase tracking-[0.3em] flex items-center gap-2 ${isTerminated ? 'text-red-400' : 'text-white/30'}`}>
+                  <h4 className={`text-[10px] font-bold uppercase tracking-[0.3em] flex items-center justify-between gap-2 ${isTerminated ? 'text-red-400' : 'text-white/30'}`}>
                     {isTerminated ? <><AlertCircle size={14}/> TERMINATION ALERT</> : "Cupid Intel"}
+                    <button
+                      onClick={() => setIsEditing(!isEditing)}
+                      className={`p-1 rounded-full border transition-colors ${isEditing ? 'border-[color:var(--theme-primary)] text-[color:var(--theme-primary)]' : 'border-[color:var(--theme-border)] text-white/40 hover:text-white hover:border-[color:var(--theme-primary)]'}`}
+                      aria-label={isEditing ? "Save changes" : "Edit profile"}
+                    >
+                      {isEditing ? <Save size={12} /> : <Edit2 size={12} />}
+                    </button>
                   </h4>
                   {isEditing ? (
                     <textarea 
@@ -733,7 +741,7 @@ const App: React.FC = () => {
                 {state.currentTab === 'dex' && (
                   <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                       <DataCard title="TRAITS & ABILITIES">
+                       <DataCard title="TRAITS & ABILITIES" isEditing={isEditing} onToggleEdit={() => setIsEditing(!isEditing)}>
                          <div className="space-y-4">
                            <TraitList 
                             label="Primary" 
@@ -751,7 +759,7 @@ const App: React.FC = () => {
                            />
                          </div>
                        </DataCard>
-                       <DataCard title="HIDDEN SKILL" className="-mt-2">
+                       <DataCard title="HIDDEN SKILL" className="-mt-2" isEditing={isEditing} onToggleEdit={() => setIsEditing(!isEditing)}>
                           <div className="p-2 transition-all h-full min-h-[180px] flex flex-col justify-center">
                              {isEditing ? (
                                <div className="space-y-3">
@@ -776,7 +784,7 @@ const App: React.FC = () => {
                        </DataCard>
                     </div>
 
-                    <DataCard title="TYPE EFFECTIVENESS">
+                    <DataCard title="TYPE EFFECTIVENESS" isEditing={isEditing} onToggleEdit={() => setIsEditing(!isEditing)}>
                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-10">
                           <StringListEditor 
                             label="EFFECTIVE AGAINST" 
@@ -798,7 +806,7 @@ const App: React.FC = () => {
                        </div>
                     </DataCard>
 
-                    <DataCard title="EVENT LOG" className="relative group">
+                    <DataCard title="EVENT LOG" className="relative group" showEditToggle={false}>
                        <div className="absolute -top-4 right-4"><Sparkles size={24} className="text-[color:var(--theme-accent)] opacity-20 group-hover:opacity-100 transition-opacity" /></div>
                        <div className="space-y-6">
                           <div data-tutorial="actions">
@@ -823,7 +831,7 @@ const App: React.FC = () => {
                 {state.currentTab === 'stats' && (
                   <div className="space-y-8 animate-in fade-in slide-in-from-right-4">
                     <div className="flex flex-col lg:flex-row gap-6 items-stretch">
-                       <DataCard title="BASE STATS" className="flex-1">
+                       <DataCard title="BASE STATS" className="flex-1" isEditing={isEditing} onToggleEdit={() => setIsEditing(!isEditing)}>
                           <div className="space-y-5 py-2">
                              {(['compassion', 'smarts', 'looks', 'personality', 'reliability', 'chemistry'] as const).map(key => (
                                <div key={key} className="space-y-2">
@@ -844,7 +852,7 @@ const App: React.FC = () => {
                              ))}
                           </div>
                        </DataCard>
-                       <DataCard title="CONNECTION RADAR" className="w-full lg:w-72 flex items-center justify-center">
+                       <DataCard title="CONNECTION RADAR" className="w-full lg:w-72 flex items-center justify-center" showEditToggle={false}>
                           <RadarChart stats={[
                              { label: 'Compassion', value: selectedPartner.stats?.compassion || 0 },
                              { label: 'Smarts', value: selectedPartner.stats?.smarts || 0 },
@@ -857,7 +865,7 @@ const App: React.FC = () => {
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                       <DataCard title="RELATIONSHIP LEVEL">
+                       <DataCard title="RELATIONSHIP LEVEL" isEditing={isEditing} onToggleEdit={() => setIsEditing(!isEditing)}>
                           <div className="flex items-center gap-4 py-4 h-full">
                              <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center text-[color:var(--theme-primary)]"><Award size={24}/></div>
                              {isEditing ? (
@@ -875,7 +883,7 @@ const App: React.FC = () => {
                              )}
                           </div>
                        </DataCard>
-                       <DataCard title="CURRENT STATUS">
+                       <DataCard title="CURRENT STATUS" isEditing={isEditing} onToggleEdit={() => setIsEditing(!isEditing)}>
                           <div className="flex items-center gap-4 py-4 h-full">
                              <div className={`w-3 h-3 rounded-full ${selectedPartner.status === 'ACTIVE' ? 'bg-green-500 shadow-[0_0_10px_#22c55e]' : 'bg-red-500'} animate-pulse`}></div>
                              {isEditing ? (
@@ -900,7 +908,7 @@ const App: React.FC = () => {
                 {state.currentTab === 'lore' && (
                   <div className="space-y-8 animate-in fade-in slide-in-from-right-4">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                       <DataCard title="MEETING DATA">
+                       <DataCard title="MEETING DATA" isEditing={isEditing} onToggleEdit={() => setIsEditing(!isEditing)}>
                           <div className="flex items-start gap-4 py-2">
                              <MapPin size={20} className="text-cyan-400 shrink-0 mt-1" />
                              <div className="flex-1">
@@ -917,7 +925,7 @@ const App: React.FC = () => {
                              </div>
                           </div>
                        </DataCard>
-                       <DataCard title="INTERACTION TIMELINE">
+                       <DataCard title="INTERACTION TIMELINE" showEditToggle={false}>
                           <div className="flex items-start gap-4 py-2">
                              <Clock size={20} className="text-amber-400 shrink-0 mt-1" />
                              <div>
@@ -930,7 +938,7 @@ const App: React.FC = () => {
                        </DataCard>
                     </div>
 
-                    <DataCard title="DATE CHECKLIST">
+                    <DataCard title="DATE CHECKLIST" isEditing={isEditing} onToggleEdit={() => setIsEditing(!isEditing)}>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-6 md:gap-x-10 py-2">
                           {selectedPartner.dateChecklist.map(item => (
                              <div key={item.id} className="flex items-center gap-4 group text-left">
@@ -974,6 +982,7 @@ const App: React.FC = () => {
                         isEditing={isEditing}
                         onUpdate={(newLoveItems) => updatePartner({ preferences: [...selectedPartner.preferences.filter(p => !p.isLove), ...newLoveItems] })}
                         isLove={true}
+                        onToggleEdit={() => setIsEditing(!isEditing)}
                        />
                        <PreferenceListEditor 
                         label="HATES" 
@@ -981,6 +990,7 @@ const App: React.FC = () => {
                         isEditing={isEditing}
                         onUpdate={(newHateItems) => updatePartner({ preferences: [...selectedPartner.preferences.filter(p => p.isLove), ...newHateItems] })}
                         isLove={false}
+                        onToggleEdit={() => setIsEditing(!isEditing)}
                        />
                     </div>
                   </div>
@@ -1160,10 +1170,10 @@ const StringListEditor: React.FC<{ label: string, items: string[], isEditing: bo
   );
 };
 
-const PreferenceListEditor: React.FC<{ label: string, items: Preference[], isEditing: boolean, onUpdate: (newItems: Preference[]) => void, isLove: boolean }> = ({ label, items, isEditing, onUpdate, isLove }) => {
+const PreferenceListEditor: React.FC<{ label: string, items: Preference[], isEditing: boolean, onUpdate: (newItems: Preference[]) => void, isLove: boolean, onToggleEdit?: () => void }> = ({ label, items, isEditing, onUpdate, isLove, onToggleEdit }) => {
   const [newVal, setNewVal] = useState('');
   return (
-    <DataCard title={label}>
+    <DataCard title={label} isEditing={isEditing} onToggleEdit={onToggleEdit}>
       <div className="space-y-3">
         {items.map(p => (
           <div key={p.id} className={`flex items-center justify-between gap-3 p-2.5 rounded-xl border ${isLove ? 'bg-green-500/5 border-green-500/10' : 'bg-red-500/5 border-red-500/10'}`}>
@@ -1221,11 +1231,22 @@ const NavIcon: React.FC<{ icon: React.ReactNode, active?: boolean, onClick: () =
   </button>
 );
 
-const DataCard: React.FC<{ title: string, children: React.ReactNode, className?: string }> = ({ title, children, className = '' }) => (
+const DataCard: React.FC<{ title: string, children: React.ReactNode, className?: string, showEditToggle?: boolean, onToggleEdit?: () => void, isEditing?: boolean }> = ({ title, children, className = '', showEditToggle = true, onToggleEdit, isEditing }) => (
   <div className={`glass p-6 md:p-8 border border-[color:var(--theme-border)] hover:border-[color:var(--theme-primary)] transition-all duration-500 group ${className}`}>
-    <h4 className="text-[10px] font-bold text-white/20 uppercase tracking-[0.3em] mb-6 md:mb-8 border-b border-white/5 pb-3 flex items-center justify-between">
-       {title}
-       <Info size={12} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+    <h4 className="text-[10px] font-bold text-white/20 uppercase tracking-[0.3em] mb-6 md:mb-8 border-b border-white/5 pb-3 flex items-center justify-between gap-3">
+       <span>{title}</span>
+       <div className="flex items-center gap-2">
+         {showEditToggle && onToggleEdit && (
+           <button
+             onClick={onToggleEdit}
+             className={`p-1 rounded-full border transition-colors ${isEditing ? 'border-[color:var(--theme-primary)] text-[color:var(--theme-primary)]' : 'border-[color:var(--theme-border)] text-white/40 hover:text-white hover:border-[color:var(--theme-primary)]'}`}
+             aria-label={isEditing ? "Save changes" : "Edit section"}
+           >
+             {isEditing ? <Save size={12} /> : <Edit2 size={12} />}
+           </button>
+         )}
+         <Info size={12} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+       </div>
     </h4>
     {children}
   </div>
