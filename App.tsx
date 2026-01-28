@@ -611,7 +611,6 @@ const App: React.FC = () => {
           <div data-tutorial="new-button">
             <NavIcon icon={<Plus size={20}/>} active={isOnboarding} onClick={startOnboarding} label="NEW" />
           </div>
-          <NavIcon icon={<SettingsIcon size={20} />} active={showSettings} onClick={() => setShowSettings(true)} label="THEME" />
           <NavIcon icon={<Power size={20}/>} onClick={async () => {
             try {
               await firebaseSignOut();
@@ -643,6 +642,13 @@ const App: React.FC = () => {
                 className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${isEditing ? 'bg-[#ff007a] text-white shadow-[0_0_15px_#ff007a/50]' : 'bg-white/5 text-white/60 hover:text-white hover:bg-white/10'}`}
               >
                 {isEditing ? <><Save size={14}/> Save Changes</> : <><Edit2 size={14}/> Edit Profile</>}
+              </button>
+              <button
+                onClick={() => setShowSettings(true)}
+                className="p-2 rounded-xl border border-[color:var(--theme-border)] text-[color:var(--theme-primary)] hover:border-[color:var(--theme-primary)] hover:bg-white/5 transition-colors"
+                aria-label="Open theme settings"
+              >
+                <SettingsIcon size={18} />
               </button>
               <div className="flex -space-x-3 overflow-x-auto" data-tutorial="partner-list">
                 {state.partners.map(p => (
