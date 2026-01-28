@@ -579,22 +579,22 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className="flex-1 flex overflow-hidden bg-[#050508]" style={themeVars}>
+    <div className="flex-1 flex flex-col md:flex-row overflow-hidden bg-[#050508]" style={themeVars}>
       {/* Sidebar */}
-      <div className="w-24 flex flex-col items-center py-10 border-r border-white/5 bg-black/40 backdrop-blur-xl shrink-0">
+      <div className="order-last md:order-first w-full md:w-24 flex md:flex-col flex-row items-center md:py-10 py-3 border-t md:border-t-0 md:border-r border-white/5 bg-black/40 backdrop-blur-xl shrink-0">
         <div
-          className="w-12 h-12 glass flex items-center justify-center mb-10 animate-pulse"
+          className="w-10 h-10 md:w-12 md:h-12 glass flex items-center justify-center md:mb-10 mb-0 ml-4 md:ml-0 animate-pulse"
           style={{ color: currentTheme.colors.primary }}
         >
           <Heart size={24} fill="currentColor" />
         </div>
-        <div className="flex-1 flex flex-col gap-8" data-tutorial="tabs">
+        <div className="flex-1 flex md:flex-col flex-row gap-4 md:gap-8 px-4 md:px-0 overflow-x-auto md:overflow-visible" data-tutorial="tabs">
           <NavIcon icon={<User size={20}/>} active={state.currentTab === 'dex'} onClick={() => setState(s => ({...s, currentTab: 'dex'}))} label="DEX" />
           <NavIcon icon={<Activity size={20}/>} active={state.currentTab === 'stats'} onClick={() => setState(s => ({...s, currentTab: 'stats'}))} label="STATS" />
           <NavIcon icon={<BookOpen size={20}/>} active={state.currentTab === 'lore'} onClick={() => setState(s => ({...s, currentTab: 'lore'}))} label="INTEL" />
           <NavIcon icon={<History size={20}/>} active={state.currentTab === 'history'} onClick={() => setState(s => ({...s, currentTab: 'history'}))} label="LOGS" />
         </div>
-        <div className="mt-auto space-y-8">
+        <div className="mt-0 md:mt-auto flex md:flex-col flex-row gap-4 md:gap-8 mr-4 md:mr-0">
           <div data-tutorial="new-button">
             <NavIcon icon={<Plus size={20}/>} active={isOnboarding} onClick={startOnboarding} label="NEW" />
           </div>
@@ -609,29 +609,29 @@ const App: React.FC = () => {
         </div>
       </div>
 
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden min-h-0">
         {/* Header */}
-        <header className="h-20 flex items-center justify-between px-10 border-b border-white/5 bg-black/20">
-          <div className="flex items-center gap-6">
-            <h2 className="text-xl font-bold tracking-tighter uppercase text-white/90">
+        <header className="h-auto md:h-20 flex flex-col md:flex-row md:items-center md:justify-between px-4 md:px-10 py-4 md:py-0 border-b border-white/5 bg-black/20 gap-4">
+          <div className="flex items-center gap-4 md:gap-6 flex-wrap">
+            <h2 className="text-lg md:text-xl font-bold tracking-tighter uppercase text-white/90">
                {isOnboarding ? 'Onboarding Protocol' : (selectedPartner?.name || 'Database')}
             </h2>
             {!isOnboarding && selectedPartner && (
-               <div className="flex gap-2">
+               <div className="flex gap-2 flex-wrap">
                   <TagPill variant="pink">{selectedPartner.relationshipType}</TagPill>
                   <span className="text-[10px] font-mono text-white/20 self-center">#{selectedPartner.dexNumber}</span>
                </div>
             )}
           </div>
           {!isOnboarding && (
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 flex-wrap">
               <button 
                 onClick={() => setIsEditing(!isEditing)} 
                 className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${isEditing ? 'bg-[#ff007a] text-white shadow-[0_0_15px_#ff007a/50]' : 'bg-white/5 text-white/60 hover:text-white hover:bg-white/10'}`}
               >
                 {isEditing ? <><Save size={14}/> Save Changes</> : <><Edit2 size={14}/> Edit Profile</>}
               </button>
-              <div className="flex -space-x-3" data-tutorial="partner-list">
+              <div className="flex -space-x-3 overflow-x-auto" data-tutorial="partner-list">
                 {state.partners.map(p => (
                   <button key={p.id} onClick={() => setState(s => ({...s, selectedPartnerId: p.id}))} className={`w-10 h-10 rounded-full border-2 overflow-hidden transition-all hover:scale-110 active:scale-95 ${state.selectedPartnerId === p.id ? 'border-[#ff007a] ring-2 ring-[#ff007a]/20' : 'border-white/10 opacity-40 hover:opacity-100'}`}>
                     <img src={p.spriteUrl} alt={p.name} className="w-full h-full object-cover mix-blend-screen" />
@@ -643,10 +643,10 @@ const App: React.FC = () => {
           )}
         </header>
 
-        <main className="flex-1 flex overflow-hidden">
+        <main className="flex-1 flex overflow-hidden min-h-0">
           {isOnboarding ? (
-            <div className="flex-1 flex flex-col p-10 max-w-3xl mx-auto w-full">
-              <div className="flex-1 overflow-y-auto space-y-6 pr-4 custom-scrollbar">
+            <div className="flex-1 flex flex-col p-4 md:p-10 max-w-3xl mx-auto w-full">
+              <div className="flex-1 overflow-y-auto space-y-6 pr-0 md:pr-4 custom-scrollbar">
                 {chatHistory.map((msg, i) => (
                   <div key={i} className={`flex ${msg.role === 'Cupid' ? 'justify-start' : 'justify-end'} animate-in slide-in-from-bottom-2`}>
                     <div className={`max-w-[80%] p-6 ${msg.role === 'Cupid' ? 'chat-bubble-cupid' : 'chat-bubble-user'} shadow-xl`}>
@@ -658,21 +658,21 @@ const App: React.FC = () => {
                 {isProcessing && <div className="chat-bubble-cupid p-4 w-16 animate-pulse ml-2" />}
                 <div ref={chatBottomRef} />
               </div>
-              <div className="mt-8 flex gap-4 p-4 glass rounded-3xl border border-white/5 items-center">
+              <div className="mt-4 md:mt-8 flex gap-3 md:gap-4 p-4 glass rounded-3xl border border-white/5 items-center">
                 {onboardingStep === 1 && (
                   <button onClick={() => fileInputRef.current?.click()} className={`p-4 rounded-2xl transition-all shrink-0 ${uploadedImage ? 'bg-green-500/20 text-green-400 border border-green-500/20' : 'bg-indigo-500/20 text-[color:var(--theme-accent)] animate-pulse border border-indigo-500/30'}`}>
                     {uploadedImage ? <CheckCircle2 size={24} /> : <Camera size={24} />}
                   </button>
                 )}
                 <input className="flex-1 bg-transparent px-4 text-white outline-none placeholder:text-white/10 text-sm" value={userInput} onChange={e => setUserInput(e.target.value)} onKeyPress={e => e.key === 'Enter' && handleOnboardingChat()} placeholder={onboardingStep === 1 ? "Upload evidence first..." : "Enter response..."} disabled={onboardingStep === 1 && !uploadedImage} />
-                <button onClick={handleOnboardingChat} disabled={onboardingStep === 1 && !uploadedImage} className="bg-[#7000ff] hover:bg-[#8521ff] text-white p-4 rounded-2xl shadow-lg transition-all active:scale-95 disabled:opacity-20"><ArrowRight size={24} /></button>
+                <button onClick={handleOnboardingChat} disabled={onboardingStep === 1 && !uploadedImage} className="bg-[#7000ff] hover:bg-[#8521ff] text-white p-3 md:p-4 rounded-2xl shadow-lg transition-all active:scale-95 disabled:opacity-20"><ArrowRight size={24} /></button>
               </div>
               <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageUpload} />
             </div>
           ) : selectedPartner ? (
-            <div className="flex-1 flex p-10 gap-10 overflow-hidden">
+            <div className="flex-1 flex flex-col xl:flex-row p-4 md:p-10 gap-6 md:gap-10 overflow-hidden">
               {/* Profile Card Left */}
-              <div className="w-80 flex flex-col gap-6 shrink-0">
+              <div className="w-full xl:w-80 flex flex-col gap-6 shrink-0">
                 <div className={`glass p-8 flex-1 flex flex-col items-center justify-center relative overflow-hidden transition-all duration-700 ${isTerminated ? 'border-red-600 grayscale bg-red-950/5 shadow-[0_0_40px_rgba(220,38,38,0.2)]' : 'border-white/5'}`}>
                   <div className="relative w-full aspect-square flex items-center justify-center bg-white/5 rounded-3xl overflow-hidden">
                      <img src={selectedPartner.spriteUrl} className={`w-3/4 h-3/4 object-contain z-10 transition-all duration-700 ${isTerminated ? 'opacity-20 scale-90' : 'float-animation mix-blend-screen'}`} />
@@ -715,10 +715,10 @@ const App: React.FC = () => {
               </div>
 
               {/* Tabs Right */}
-              <div className="flex-1 overflow-y-auto pr-4 space-y-8 custom-scrollbar">
+              <div className="flex-1 overflow-y-auto pr-0 md:pr-4 space-y-6 md:space-y-8 custom-scrollbar">
                 {state.currentTab === 'dex' && (
                   <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
-                    <div className="grid grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                        <DataCard title="TRAITS & ABILITIES">
                          <div className="space-y-4">
                            <TraitList 
@@ -763,7 +763,7 @@ const App: React.FC = () => {
                     </div>
 
                     <DataCard title="TYPE EFFECTIVENESS">
-                       <div className="grid grid-cols-2 gap-10">
+                       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-10">
                           <StringListEditor 
                             label="EFFECTIVE AGAINST" 
                             items={selectedPartner.effectiveness.effectiveAgainst}
@@ -808,7 +808,7 @@ const App: React.FC = () => {
 
                 {state.currentTab === 'stats' && (
                   <div className="space-y-8 animate-in fade-in slide-in-from-right-4">
-                    <div className="flex gap-6 items-stretch">
+                    <div className="flex flex-col lg:flex-row gap-6 items-stretch">
                        <DataCard title="BASE STATS" className="flex-1">
                           <div className="space-y-5 py-2">
                              {(['compassion', 'smarts', 'looks', 'personality', 'reliability', 'chemistry'] as const).map(key => (
@@ -830,7 +830,7 @@ const App: React.FC = () => {
                              ))}
                           </div>
                        </DataCard>
-                       <DataCard title="CONNECTION RADAR" className="w-72 flex items-center justify-center">
+                       <DataCard title="CONNECTION RADAR" className="w-full lg:w-72 flex items-center justify-center">
                           <RadarChart stats={[
                              { label: 'Compassion', value: selectedPartner.stats?.compassion || 0 },
                              { label: 'Smarts', value: selectedPartner.stats?.smarts || 0 },
@@ -842,7 +842,7 @@ const App: React.FC = () => {
                        </DataCard>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                        <DataCard title="RELATIONSHIP LEVEL">
                           <div className="flex items-center gap-4 py-4 h-full">
                              <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center text-[color:var(--theme-primary)]"><Award size={24}/></div>
@@ -885,7 +885,7 @@ const App: React.FC = () => {
 
                 {state.currentTab === 'lore' && (
                   <div className="space-y-8 animate-in fade-in slide-in-from-right-4">
-                    <div className="grid grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                        <DataCard title="MEETING DATA">
                           <div className="flex items-start gap-4 py-2">
                              <MapPin size={20} className="text-cyan-400 shrink-0 mt-1" />
@@ -917,7 +917,7 @@ const App: React.FC = () => {
                     </div>
 
                     <DataCard title="DATE CHECKLIST">
-                       <div className="grid grid-cols-2 gap-y-4 gap-x-10 py-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-6 md:gap-x-10 py-2">
                           {selectedPartner.dateChecklist.map(item => (
                              <div key={item.id} className="flex items-center gap-4 group text-left">
                                 <button onClick={() => toggleChecklist(item.id)} className="shrink-0">
@@ -953,7 +953,7 @@ const App: React.FC = () => {
                        </div>
                     </DataCard>
 
-                    <div className="grid grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                        <PreferenceListEditor 
                         label="LOVES" 
                         items={selectedPartner.preferences.filter(p => p.isLove)}
@@ -1201,15 +1201,15 @@ const PreferenceListEditor: React.FC<{ label: string, items: Preference[], isEdi
 // --- Generic Components ---
 
 const NavIcon: React.FC<{ icon: React.ReactNode, active?: boolean, onClick: () => void, label: string, color?: string }> = ({ icon, active, onClick, label, color = "text-white" }) => (
-  <button onClick={onClick} className={`flex flex-col items-center gap-3 group transition-all duration-300 ${active ? 'scale-110' : 'opacity-70 hover:opacity-100 hover:scale-105'}`}>
-    <div className={`p-4 rounded-2xl transition-all duration-500 ${active ? 'bg-white/10 border border-white/10 shadow-[0_0_20px_rgba(255,255,255,0.05)] text-[color:var(--theme-primary)]' : color}`}>{icon}</div>
-    <span className={`text-[8px] font-bold tracking-[0.3em] uppercase transition-colors ${active ? 'text-white' : 'text-white/75'}`}>{label}</span>
+  <button onClick={onClick} className={`flex flex-col items-center gap-2 md:gap-3 group transition-all duration-300 ${active ? 'scale-110' : 'opacity-70 hover:opacity-100 hover:scale-105'}`}>
+    <div className={`p-3 md:p-4 rounded-2xl transition-all duration-500 ${active ? 'bg-white/10 border border-white/10 shadow-[0_0_20px_rgba(255,255,255,0.05)] text-[color:var(--theme-primary)]' : color}`}>{icon}</div>
+    <span className={`hidden md:block text-[8px] font-bold tracking-[0.3em] uppercase transition-colors ${active ? 'text-white' : 'text-white/75'}`}>{label}</span>
   </button>
 );
 
 const DataCard: React.FC<{ title: string, children: React.ReactNode, className?: string }> = ({ title, children, className = '' }) => (
-  <div className={`glass p-8 border border-white/5 hover:border-white/10 transition-all duration-500 group ${className}`}>
-    <h4 className="text-[10px] font-bold text-white/20 uppercase tracking-[0.3em] mb-8 border-b border-white/5 pb-3 flex items-center justify-between">
+  <div className={`glass p-6 md:p-8 border border-white/5 hover:border-white/10 transition-all duration-500 group ${className}`}>
+    <h4 className="text-[10px] font-bold text-white/20 uppercase tracking-[0.3em] mb-6 md:mb-8 border-b border-white/5 pb-3 flex items-center justify-between">
        {title}
        <Info size={12} className="opacity-0 group-hover:opacity-100 transition-opacity" />
     </h4>
