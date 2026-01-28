@@ -181,6 +181,18 @@ const App: React.FC = () => {
   });
 
   const currentTheme = useMemo(() => getTheme(currentThemeId), [currentThemeId]);
+  const toRgba = (hex: string, alpha: number) => {
+    const cleaned = hex.replace('#', '');
+    const normalized = cleaned.length === 3
+      ? cleaned.split('').map((c) => c + c).join('')
+      : cleaned;
+    const num = parseInt(normalized, 16);
+    if (Number.isNaN(num)) return hex;
+    const r = (num >> 16) & 255;
+    const g = (num >> 8) & 255;
+    const b = num & 255;
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  };
   const themeVars = useMemo(() => ({
     ['--theme-primary' as any]: currentTheme.colors.primary,
     ['--theme-primary-hover' as any]: currentTheme.colors.primaryHover,
@@ -188,6 +200,7 @@ const App: React.FC = () => {
     ['--theme-accent' as any]: currentTheme.colors.accent,
     ['--theme-accent-hover' as any]: currentTheme.colors.accentHover,
     ['--theme-accent-glow' as any]: currentTheme.colors.accentGlow,
+    ['--theme-border' as any]: toRgba(currentTheme.colors.primary, 0.25),
   }), [currentTheme]);
 
   const shuffledQuotesRef = useRef<string[]>([]);
@@ -1208,7 +1221,7 @@ const NavIcon: React.FC<{ icon: React.ReactNode, active?: boolean, onClick: () =
 );
 
 const DataCard: React.FC<{ title: string, children: React.ReactNode, className?: string }> = ({ title, children, className = '' }) => (
-  <div className={`glass p-6 md:p-8 border border-white/5 hover:border-white/10 transition-all duration-500 group ${className}`}>
+  <div className={`glass p-6 md:p-8 border border-[color:var(--theme-border)] hover:border-[color:var(--theme-primary)] transition-all duration-500 group ${className}`}>
     <h4 className="text-[10px] font-bold text-white/20 uppercase tracking-[0.3em] mb-6 md:mb-8 border-b border-white/5 pb-3 flex items-center justify-between">
        {title}
        <Info size={12} className="opacity-0 group-hover:opacity-100 transition-opacity" />
