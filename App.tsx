@@ -595,12 +595,14 @@ const App: React.FC = () => {
     <div className="flex-1 flex flex-col md:flex-row overflow-hidden bg-[#0f0f12]" style={themeVars}>
       {/* Sidebar */}
       <div className="order-last md:order-first w-full md:w-24 flex md:flex-col flex-row items-center md:py-10 py-3 border-t md:border-t-0 md:border-r border-white/5 bg-black/40 backdrop-blur-xl shrink-0 fixed md:static bottom-0 left-0 z-50">
-        <div
+        <button
           className="w-10 h-10 md:w-12 md:h-12 glass flex items-center justify-center md:mb-10 mb-0 ml-4 md:ml-0 animate-pulse"
           style={{ color: currentTheme.colors.primary }}
+          onClick={() => setShowSettings(true)}
+          aria-label="Open theme settings"
         >
           <Heart size={24} fill="currentColor" />
-        </div>
+        </button>
         <div className="flex-1 flex md:flex-col flex-row gap-4 md:gap-8 px-4 md:px-0 overflow-x-auto md:overflow-visible" data-tutorial="tabs">
           <NavIcon icon={<User size={20}/>} active={state.currentTab === 'dex'} onClick={() => setState(s => ({...s, currentTab: 'dex'}))} label="DEX" />
           <NavIcon icon={<Activity size={20}/>} active={state.currentTab === 'stats'} onClick={() => setState(s => ({...s, currentTab: 'stats'}))} label="STATS" />
@@ -642,13 +644,6 @@ const App: React.FC = () => {
                 className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${isEditing ? 'bg-[#ff007a] text-white shadow-[0_0_15px_#ff007a/50]' : 'bg-white/5 text-white/60 hover:text-white hover:bg-white/10'}`}
               >
                 {isEditing ? <><Save size={14}/> Save Changes</> : <><Edit2 size={14}/> Edit Profile</>}
-              </button>
-              <button
-                onClick={() => setShowSettings(true)}
-                className="p-2 rounded-xl border border-[color:var(--theme-border)] text-[color:var(--theme-primary)] hover:border-[color:var(--theme-primary)] hover:bg-white/5 transition-colors"
-                aria-label="Open theme settings"
-              >
-                <SettingsIcon size={18} />
               </button>
               <div className="flex -space-x-3 overflow-x-auto" data-tutorial="partner-list">
                 {state.partners.map(p => (
