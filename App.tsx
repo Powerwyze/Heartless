@@ -579,9 +579,9 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className="flex-1 flex flex-col md:flex-row overflow-hidden bg-[#050508]" style={themeVars}>
+    <div className="flex-1 flex flex-col md:flex-row overflow-hidden bg-[#0f0f12]" style={themeVars}>
       {/* Sidebar */}
-      <div className="order-last md:order-first w-full md:w-24 flex md:flex-col flex-row items-center md:py-10 py-3 border-t md:border-t-0 md:border-r border-white/5 bg-black/40 backdrop-blur-xl shrink-0">
+      <div className="order-last md:order-first w-full md:w-24 flex md:flex-col flex-row items-center md:py-10 py-3 border-t md:border-t-0 md:border-r border-white/5 bg-black/40 backdrop-blur-xl shrink-0 fixed md:static bottom-0 left-0 z-50">
         <div
           className="w-10 h-10 md:w-12 md:h-12 glass flex items-center justify-center md:mb-10 mb-0 ml-4 md:ml-0 animate-pulse"
           style={{ color: currentTheme.colors.primary }}
@@ -609,7 +609,7 @@ const App: React.FC = () => {
         </div>
       </div>
 
-      <div className="flex-1 flex flex-col overflow-hidden min-h-0">
+      <div className="flex-1 flex flex-col overflow-hidden min-h-0 pb-16 md:pb-0">
         {/* Header */}
         <header className="h-auto md:h-20 flex flex-col md:flex-row md:items-center md:justify-between px-4 md:px-10 py-4 md:py-0 border-b border-white/5 bg-black/20 gap-4">
           <div className="flex items-center gap-4 md:gap-6 flex-wrap">
