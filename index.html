@@ -51,6 +51,11 @@
     ::-webkit-scrollbar { width: 4px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: var(--accent-purple); border-radius: 10px; }
+    @media (max-width: 768px) {
+      ::-webkit-scrollbar { width: 0; height: 0; }
+      .custom-scrollbar { scrollbar-width: none; }
+      .custom-scrollbar::-webkit-scrollbar { display: none; }
+    }
 
     @keyframes float {
       0%, 100% { transform: translateY(0); }
