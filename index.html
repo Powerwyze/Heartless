@@ -1,80 +1,128 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Heartless - Modern Partner Dex</title>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="icon" href="/favicon.ico">
   <style>
     :root {
-      --bg-dark: #0f0f12;
-      --accent-pink: #ff007a;
-      --accent-cyan: #00f2ff;
-      --accent-purple: #7000ff;
-      --glass-bg: rgba(255, 255, 255, 0.03);
-      --glass-border: rgba(255, 255, 255, 0.1);
+      --bg-primary: #0a0a0a;
+      --bg-alt: #111111;
+      --bg-surface: #141414;
+      --text-primary: #F0F6F7;
+      --text-muted: #919FA5;
+      --text-subtle: #747474;
+      --border-default: #2a2a2a;
+      --border-hover: #3a3a3a;
     }
 
     body {
       margin: 0;
       padding: 0;
-      background-color: var(--bg-dark);
-      background-image: 
-        radial-gradient(circle at 20% 20%, rgba(112, 0, 255, 0.08) 0%, transparent 55%),
-        radial-gradient(circle at 80% 80%, rgba(255, 0, 122, 0.06) 0%, transparent 55%);
-      font-family: 'Space Grotesk', sans-serif;
-      color: #ffffff;
+      background-color: var(--theme-bg, var(--bg-primary));
+      background-image:
+        radial-gradient(circle at 20% 20%, var(--theme-grad-a, rgba(112, 0, 255, 0.08)) 0%, transparent 55%),
+        radial-gradient(circle at 80% 80%, var(--theme-grad-b, rgba(255, 0, 122, 0.06)) 0%, transparent 55%);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: var(--theme-text, var(--text-primary));
       min-height: 100vh;
       display: flex;
       flex-direction: column;
     }
 
+    /* Card - replaces glass */
     .glass {
-      background: var(--glass-bg);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid var(--theme-border, var(--glass-border));
-      border-radius: 24px;
+      background: var(--theme-surface, var(--bg-surface));
+      border: 2px solid var(--theme-border, var(--border-default));
+      border-radius: 6px;
     }
 
-    .neon-text {
-      text-shadow: 0 0 10px rgba(255, 0, 122, 0.5);
+    .glass:hover {
+      border-color: var(--theme-border-hover, var(--border-hover));
     }
 
-    .neon-border {
-      box-shadow: 0 0 20px rgba(0, 242, 255, 0.2);
+    /* Monospace labels */
+    .label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-subtle);
     }
 
-    /* Modern custom scrollbar */
+    /* Minimal scrollbar */
     ::-webkit-scrollbar { width: 4px; }
     ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: var(--accent-purple); border-radius: 10px; }
+    ::-webkit-scrollbar-thumb { background: var(--border-default); border-radius: 2px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--border-hover); }
     @media (max-width: 768px) {
       ::-webkit-scrollbar { width: 0; height: 0; }
       .custom-scrollbar { scrollbar-width: none; }
       .custom-scrollbar::-webkit-scrollbar { display: none; }
     }
 
-    @keyframes float {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-10px); }
+    /* Monospace text */
+    .pixel-text {
+      font-family: 'JetBrains Mono', monospace;
+      letter-spacing: 0.05em;
     }
-    .float-animation { animation: float 4s ease-in-out infinite; }
 
-    .pixel-text { font-family: 'JetBrains Mono', monospace; letter-spacing: -0.5px; }
-    
+    /* Chat bubbles - minimal style */
     .chat-bubble-cupid {
-      background: linear-gradient(135deg, rgba(112, 0, 255, 0.2), rgba(112, 0, 255, 0.1));
-      border: 1px solid rgba(112, 0, 255, 0.3);
-      border-radius: 20px 20px 20px 4px;
+      background: var(--theme-surface, var(--bg-surface));
+      border: 2px solid var(--theme-border, var(--border-default));
+      border-radius: 6px 6px 6px 2px;
     }
 
     .chat-bubble-user {
-      background: linear-gradient(135deg, rgba(0, 242, 255, 0.2), rgba(0, 242, 255, 0.1));
-      border: 1px solid rgba(0, 242, 255, 0.3);
-      border-radius: 20px 20px 4px 20px;
+      background: var(--theme-bg-alt, var(--bg-alt));
+      border: 2px solid var(--theme-border, var(--border-default));
+      border-radius: 6px 6px 2px 6px;
+    }
+
+    /* Grayscale to color image hover */
+    .img-grayscale {
+      filter: grayscale(100%);
+      transition: filter 300ms ease;
+    }
+    .img-grayscale:hover {
+      filter: grayscale(0%);
+    }
+
+    /* Hover text transition */
+    .hover-white {
+      transition: color 200ms ease;
+    }
+    .hover-white:hover {
+      color: #FFFFFF;
+    }
+
+    /* Decorative corner accents for cards */
+    .corner-accents {
+      position: relative;
+    }
+    .corner-accents::before,
+    .corner-accents::after {
+      content: '';
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      pointer-events: none;
+    }
+    .corner-accents::before {
+      top: -1px;
+      left: -1px;
+      border-top: 1px solid var(--theme-primary, var(--text-subtle));
+      border-left: 1px solid var(--theme-primary, var(--text-subtle));
+    }
+    .corner-accents::after {
+      bottom: -1px;
+      right: -1px;
+      border-bottom: 1px solid var(--theme-primary, var(--text-subtle));
+      border-right: 1px solid var(--theme-primary, var(--text-subtle));
     }
   </style>
 <script type="importmap">

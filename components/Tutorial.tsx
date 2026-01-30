@@ -4,7 +4,7 @@ import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, X, ChevronRight } from 'luci
 interface TutorialStep {
   title: string;
   description: string;
-  target: string; // CSS selector or ID
+  target: string;
   position: 'top' | 'bottom' | 'left' | 'right';
   arrow: 'up' | 'down' | 'left' | 'right';
 }
@@ -17,43 +17,43 @@ interface TutorialProps {
 
 const tutorialSteps: TutorialStep[] = [
   {
-    title: 'Welcome to Heartless Partner Dex!',
-    description: 'Your AI-powered relationship tracking system. Let me show you around!',
+    title: 'Welcome to Heartless',
+    description: 'Your AI-powered relationship tracking system. Let me show you around.',
     target: '',
     position: 'bottom',
     arrow: 'down',
   },
   {
     title: 'Create Your First Partner',
-    description: 'Click the NEW button to add someone to your Dex. Upload their photo and answer a few questions - AI will do the rest!',
+    description: 'Click NEW to add someone. Upload their photo and answer questions - AI handles the rest.',
     target: '[data-tutorial="new-button"]',
     position: 'right',
     arrow: 'left',
   },
   {
     title: 'View Your Partners',
-    description: 'All your partners appear here. Click any partner to view their full profile and stats.',
+    description: 'All partners appear here. Click any to view their profile and stats.',
     target: '[data-tutorial="partner-list"]',
     position: 'right',
     arrow: 'left',
   },
   {
-    title: 'Explore Different Views',
-    description: 'Switch between Dex (overview), Stats (detailed analytics), and Timeline (interaction history).',
+    title: 'Explore Views',
+    description: 'Switch between Dex, Stats, Intel, and Logs for different perspectives.',
     target: '[data-tutorial="tabs"]',
     position: 'bottom',
     arrow: 'up',
   },
   {
     title: 'Track Interactions',
-    description: 'Log events with Report Damage or Report Growth. Use Emotional Update for AI-guided relationship analysis.',
+    description: 'Log events with Damage or Growth. Use Emotional Update for AI analysis.',
     target: '[data-tutorial="actions"]',
     position: 'left',
     arrow: 'right',
   },
   {
-    title: "You're All Set!",
-    description: 'Start by creating your first partner. Your data syncs automatically across devices!',
+    title: "You're Ready",
+    description: 'Start by creating your first partner. Data syncs across devices automatically.',
     target: '',
     position: 'bottom',
     arrow: 'down',
@@ -108,7 +108,6 @@ export const Tutorial: React.FC<TutorialProps> = ({ isOpen, onComplete, onSkip }
 
   const getTooltipPosition = () => {
     if (!targetRect) {
-      // Center of screen for non-targeted steps
       return {
         top: '50%',
         left: '50%',
@@ -117,8 +116,8 @@ export const Tutorial: React.FC<TutorialProps> = ({ isOpen, onComplete, onSkip }
     }
 
     const padding = 20;
-    const tooltipWidth = 320;
-    const tooltipHeight = 250; // Increased for content
+    const tooltipWidth = 280;
+    const tooltipHeight = 200;
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
 
@@ -131,8 +130,6 @@ export const Tutorial: React.FC<TutorialProps> = ({ isOpen, onComplete, onSkip }
         top = targetRect.top + targetRect.height / 2;
         left = targetRect.right + padding;
         transform = 'translateY(-50%)';
-
-        // Check if tooltip goes off right edge
         if (left + tooltipWidth > viewportWidth - padding) {
           left = targetRect.left - tooltipWidth - padding;
         }
@@ -141,8 +138,6 @@ export const Tutorial: React.FC<TutorialProps> = ({ isOpen, onComplete, onSkip }
         top = targetRect.top + targetRect.height / 2;
         left = targetRect.left - tooltipWidth - padding;
         transform = 'translateY(-50%)';
-
-        // Check if tooltip goes off left edge
         if (left < padding) {
           left = targetRect.right + padding;
         }
@@ -151,8 +146,6 @@ export const Tutorial: React.FC<TutorialProps> = ({ isOpen, onComplete, onSkip }
         top = targetRect.bottom + padding;
         left = targetRect.left + targetRect.width / 2;
         transform = 'translateX(-50%)';
-
-        // Check if tooltip goes off bottom edge
         if (top + tooltipHeight > viewportHeight - padding) {
           top = targetRect.top - tooltipHeight - padding;
         }
@@ -161,8 +154,6 @@ export const Tutorial: React.FC<TutorialProps> = ({ isOpen, onComplete, onSkip }
         top = targetRect.top - tooltipHeight - padding;
         left = targetRect.left + targetRect.width / 2;
         transform = 'translateX(-50%)';
-
-        // Check if tooltip goes off top edge
         if (top < padding) {
           top = targetRect.bottom + padding;
         }
@@ -171,7 +162,6 @@ export const Tutorial: React.FC<TutorialProps> = ({ isOpen, onComplete, onSkip }
         return {};
     }
 
-    // Clamp horizontal position
     const halfWidth = tooltipWidth / 2;
     if (transform.includes('translateX')) {
       left = Math.max(halfWidth + padding, Math.min(viewportWidth - halfWidth - padding, left));
@@ -179,7 +169,6 @@ export const Tutorial: React.FC<TutorialProps> = ({ isOpen, onComplete, onSkip }
       left = Math.max(padding, Math.min(viewportWidth - tooltipWidth - padding, left));
     }
 
-    // Clamp vertical position
     const halfHeight = tooltipHeight / 2;
     if (transform.includes('translateY')) {
       top = Math.max(halfHeight + padding, Math.min(viewportHeight - halfHeight - padding, top));
@@ -197,8 +186,8 @@ export const Tutorial: React.FC<TutorialProps> = ({ isOpen, onComplete, onSkip }
   const getArrowPosition = () => {
     if (!targetRect) return null;
 
-    const arrowSize = 40;
-    const offset = 60;
+    const arrowSize = 32;
+    const offset = 50;
 
     switch (step.arrow) {
       case 'left':
@@ -235,71 +224,71 @@ export const Tutorial: React.FC<TutorialProps> = ({ isOpen, onComplete, onSkip }
 
   return (
     <div className="fixed inset-0 z-50 pointer-events-none">
-      {/* Backdrop with spotlight */}
-      <div className="absolute inset-0 bg-black/80 pointer-events-auto" onClick={handleSkip}>
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/85 pointer-events-auto" onClick={handleSkip}>
         {targetRect && (
           <div
-            className="absolute border-4 border-pink-500 rounded-lg shadow-[0_0_30px_rgba(236,72,153,0.8)] animate-pulse"
+            className="absolute border border-[var(--theme-primary,#F0F6F7)] rounded"
             style={{
-              top: `${targetRect.top - 8}px`,
-              left: `${targetRect.left - 8}px`,
-              width: `${targetRect.width + 16}px`,
-              height: `${targetRect.height + 16}px`,
+              top: `${targetRect.top - 4}px`,
+              left: `${targetRect.left - 4}px`,
+              width: `${targetRect.width + 8}px`,
+              height: `${targetRect.height + 8}px`,
               pointerEvents: 'none',
             }}
           />
         )}
       </div>
 
-      {/* Arrow pointing to target */}
+      {/* Arrow */}
       {targetRect && ArrowIcon && (
         <div
-          className="absolute text-[color:var(--theme-primary)] animate-bounce pointer-events-none"
+          className="absolute text-[var(--theme-primary,#F0F6F7)] pointer-events-none opacity-60"
           style={getArrowPosition() || {}}
         >
-          <ArrowIcon size={40} strokeWidth={3} />
+          <ArrowIcon size={32} strokeWidth={2} />
         </div>
       )}
 
       {/* Tooltip */}
       <div
-        className="absolute bg-gradient-to-br from-gray-900 to-black border-4 border-pink-500 shadow-[0_0_40px_rgba(236,72,153,0.8)] p-6 rounded-lg pointer-events-auto"
+        className="absolute bg-[var(--theme-bg-alt,#111111)] border border-[var(--theme-border,#2a2a2a)] rounded-lg p-4 pointer-events-auto"
         style={{
           ...getTooltipPosition(),
-          width: '320px',
+          width: '280px',
           maxWidth: '90vw',
         }}
       >
         {/* Close button */}
         <button
           onClick={handleSkip}
-          className="absolute top-2 right-2 text-white/60 hover:text-white transition-colors"
+          className="absolute top-2 right-2 text-[var(--theme-text-subtle,#747474)] hover:text-[var(--theme-text,#F0F6F7)] transition-colors"
         >
-          <X size={20} />
+          <X size={16} />
         </button>
 
         {/* Content */}
-        <div className="space-y-4">
+        <div className="space-y-3">
           <div>
-            <h3 className="text-xl font-bold text-[color:var(--theme-primary)] mb-2 tracking-wide">
+            <h3 className="text-sm font-semibold text-[var(--theme-text,#F0F6F7)] mb-1">
               {step.title}
             </h3>
-            <p className="text-sm text-gray-300 leading-relaxed">
+            <p className="text-xs text-[var(--theme-text-muted,#919FA5)] leading-relaxed">
               {step.description}
             </p>
           </div>
 
           {/* Progress dots */}
-          <div className="flex justify-center gap-2">
+          <div className="flex justify-center gap-1.5">
             {tutorialSteps.map((_, index) => (
               <div
                 key={index}
-                className={`h-2 rounded-full transition-all ${
+                className={`h-1 rounded-full transition-all ${
                   index === currentStep
-                    ? 'w-8 bg-pink-500'
+                    ? 'w-4 bg-[var(--theme-primary,#F0F6F7)]'
                     : index < currentStep
-                    ? 'w-2 bg-pink-500/50'
-                    : 'w-2 bg-white/20'
+                    ? 'w-1 bg-[var(--theme-text-muted,#919FA5)]'
+                    : 'w-1 bg-[var(--theme-border,#2a2a2a)]'
                 }`}
               />
             ))}
@@ -309,20 +298,20 @@ export const Tutorial: React.FC<TutorialProps> = ({ isOpen, onComplete, onSkip }
           <div className="flex gap-2">
             <button
               onClick={handleSkip}
-              className="flex-1 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors text-sm font-medium"
+              className="flex-1 px-3 py-1.5 bg-transparent text-[var(--theme-text-muted,#919FA5)] hover:text-[var(--theme-text,#F0F6F7)] rounded border border-[var(--theme-border,#2a2a2a)] hover:border-[var(--theme-border-hover,#3a3a3a)] transition-colors text-xs"
             >
-              Skip Tour
+              Skip
             </button>
             <button
               onClick={handleNext}
-              className="flex-1 px-4 py-2 bg-pink-600 hover:bg-pink-500 text-white rounded-lg transition-colors text-sm font-bold flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(236,72,153,0.6)]"
+              className="flex-1 px-3 py-1.5 bg-[var(--theme-surface,#141414)] text-[var(--theme-text,#F0F6F7)] rounded border border-[var(--theme-border,#2a2a2a)] hover:border-[var(--theme-border-hover,#3a3a3a)] transition-colors text-xs font-medium flex items-center justify-center gap-1"
             >
               {currentStep < tutorialSteps.length - 1 ? (
                 <>
-                  Next <ChevronRight size={16} />
+                  Next <ChevronRight size={14} />
                 </>
               ) : (
-                "Let's Go!"
+                "Start"
               )}
             </button>
           </div>

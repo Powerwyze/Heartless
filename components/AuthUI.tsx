@@ -49,16 +49,16 @@ export const AuthUI: React.FC<AuthUIProps> = ({ onAuthSuccess }) => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-black">
-      <div className="w-full max-w-md">
-        {/* Retro-styled auth card */}
-        <div className="bg-gradient-to-b from-gray-900 to-black border-4 border-pink-500 shadow-[0_0_20px_rgba(236,72,153,0.5)] p-8">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-[var(--theme-bg,#0a0a0a)]">
+      <div className="w-full max-w-sm">
+        {/* Auth card */}
+        <div className="bg-[var(--theme-bg-alt,#111111)] border border-[var(--theme-border,#2a2a2a)] rounded-lg p-6">
           {/* Header */}
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-[color:var(--theme-primary)] mb-2 tracking-wider">
-              HEARTLESS
+          <div className="text-center mb-6">
+            <h1 className="text-xl font-semibold text-[var(--theme-text,#F0F6F7)] mb-1 tracking-tight">
+              Heartless
             </h1>
-            <p className="text-sm text-gray-400 tracking-[0.2em] uppercase">
+            <p className="font-mono text-[10px] text-[var(--theme-text-subtle,#747474)] uppercase tracking-wide">
               Partner Dex System
             </p>
           </div>
@@ -66,48 +66,48 @@ export const AuthUI: React.FC<AuthUIProps> = ({ onAuthSuccess }) => {
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-bold text-[color:var(--theme-primary)] mb-1 tracking-wider uppercase">
+              <label className="block font-mono text-[10px] text-[var(--theme-text-subtle,#747474)] mb-1.5 uppercase tracking-wide">
                 Email
               </label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-2 bg-black border-2 border-pink-500 text-white focus:outline-none focus:border-pink-300"
+                className="w-full px-3 py-2 bg-[var(--theme-surface,#141414)] border border-[var(--theme-border,#2a2a2a)] rounded text-sm text-[var(--theme-text,#F0F6F7)] focus:outline-none focus:border-[var(--theme-border-hover,#3a3a3a)] transition-colors"
                 disabled={isLoading}
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-[color:var(--theme-primary)] mb-1 tracking-wider uppercase">
+              <label className="block font-mono text-[10px] text-[var(--theme-text-subtle,#747474)] mb-1.5 uppercase tracking-wide">
                 Password
               </label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-2 bg-black border-2 border-pink-500 text-white focus:outline-none focus:border-pink-300"
+                className="w-full px-3 py-2 bg-[var(--theme-surface,#141414)] border border-[var(--theme-border,#2a2a2a)] rounded text-sm text-[var(--theme-text,#F0F6F7)] focus:outline-none focus:border-[var(--theme-border-hover,#3a3a3a)] transition-colors"
                 disabled={isLoading}
               />
             </div>
 
             {isSignUp && (
               <div>
-                <label className="block text-xs font-bold text-[color:var(--theme-primary)] mb-1 tracking-wider uppercase">
+                <label className="block font-mono text-[10px] text-[var(--theme-text-subtle,#747474)] mb-1.5 uppercase tracking-wide">
                   Confirm Password
                 </label>
                 <input
                   type="password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full px-4 py-2 bg-black border-2 border-pink-500 text-white focus:outline-none focus:border-pink-300"
+                  className="w-full px-3 py-2 bg-[var(--theme-surface,#141414)] border border-[var(--theme-border,#2a2a2a)] rounded text-sm text-[var(--theme-text,#F0F6F7)] focus:outline-none focus:border-[var(--theme-border-hover,#3a3a3a)] transition-colors"
                   disabled={isLoading}
                 />
               </div>
             )}
 
             {error && (
-              <div className="bg-red-900/50 border-2 border-red-500 px-4 py-2 text-red-200 text-sm">
+              <div className="bg-red-950/30 border border-red-900/50 rounded px-3 py-2 text-red-400 text-xs">
                 {error}
               </div>
             )}
@@ -115,20 +115,20 @@ export const AuthUI: React.FC<AuthUIProps> = ({ onAuthSuccess }) => {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-3 bg-pink-400 text-white font-bold tracking-wider uppercase hover:bg-pink-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors border-2 border-pink-300 shadow-[0_0_30px_rgba(244,114,182,0.8)]"
+              className="w-full py-2.5 bg-[var(--theme-surface,#141414)] text-[var(--theme-text,#F0F6F7)] font-mono text-xs uppercase tracking-wide hover:bg-[var(--theme-bg-alt,#111111)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors border border-[var(--theme-border,#2a2a2a)] hover:border-[var(--theme-border-hover,#3a3a3a)] rounded"
             >
-              {isLoading ? 'LOADING...' : isSignUp ? 'SIGN UP' : 'LOG IN'}
+              {isLoading ? 'Loading...' : isSignUp ? 'Sign Up' : 'Log In'}
             </button>
           </form>
 
           {/* Toggle between sign up and log in */}
-          <div className="mt-6 text-center">
+          <div className="mt-4 text-center">
             <button
               onClick={() => {
                 setIsSignUp(!isSignUp);
                 setError('');
               }}
-              className="text-[color:var(--theme-primary)] text-sm hover:text-[color:var(--theme-primary-hover)] transition-colors uppercase tracking-wider"
+              className="text-[var(--theme-text-muted,#919FA5)] text-xs hover:text-[var(--theme-text,#F0F6F7)] transition-colors"
               disabled={isLoading}
             >
               {isSignUp ? 'Already have an account? Log In' : "Don't have an account? Sign Up"}
@@ -136,9 +136,9 @@ export const AuthUI: React.FC<AuthUIProps> = ({ onAuthSuccess }) => {
           </div>
         </div>
 
-        {/* Retro decorative elements */}
-        <div className="mt-4 text-center text-xs text-gray-600 tracking-[0.3em] uppercase">
-          v1.0.0 | Powered by Firebase
+        {/* Version info */}
+        <div className="mt-4 text-center font-mono text-[10px] text-[var(--theme-text-subtle,#747474)] tracking-wide">
+          v1.0.0
         </div>
       </div>
     </div>

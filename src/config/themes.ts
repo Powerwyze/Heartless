@@ -2,98 +2,205 @@ export interface Theme {
   name: string;
   id: string;
   colors: {
+    // Primary accent color
     primary: string;
     primaryHover: string;
-    primaryGlow: string;
+    // Secondary accent
     accent: string;
     accentHover: string;
-    accentGlow: string;
+    // Backgrounds
+    bg: string;
+    bgAlt: string;
+    surface: string;
+    // Text colors
+    text: string;
+    textMuted: string;
+    textSubtle: string;
+    // Borders
+    border: string;
+    borderHover: string;
   };
 }
 
 export const themes: Theme[] = [
   {
-    name: 'Pink Dream',
-    id: 'pink',
-    colors: {
-      primary: '#ec4899', // pink-500
-      primaryHover: '#f472b6', // pink-400
-      primaryGlow: 'rgba(236, 72, 153, 0.8)',
-      accent: '#c084fc', // purple-400
-      accentHover: '#d8b4fe', // purple-300
-      accentGlow: 'rgba(192, 132, 252, 0.8)',
-    },
-  },
-  {
-    name: 'Ocean Blue',
-    id: 'blue',
-    colors: {
-      primary: '#3b82f6', // blue-500
-      primaryHover: '#60a5fa', // blue-400
-      primaryGlow: 'rgba(59, 130, 246, 0.8)',
-      accent: '#06b6d4', // cyan-500
-      accentHover: '#22d3ee', // cyan-400
-      accentGlow: 'rgba(6, 182, 212, 0.8)',
-    },
-  },
-  {
-    name: 'Sunset Orange',
-    id: 'yellow',
-    colors: {
-      primary: '#f59e0b', // amber-500
-      primaryHover: '#fbbf24', // amber-400
-      primaryGlow: 'rgba(245, 158, 11, 0.8)',
-      accent: '#ef4444', // red-500
-      accentHover: '#f87171', // red-400
-      accentGlow: 'rgba(239, 68, 68, 0.8)',
-    },
-  },
-  {
-    name: 'Emerald Green',
-    id: 'green',
-    colors: {
-      primary: '#10b981', // emerald-500
-      primaryHover: '#34d399', // emerald-400
-      primaryGlow: 'rgba(16, 185, 129, 0.8)',
-      accent: '#14b8a6', // teal-500
-      accentHover: '#2dd4bf', // teal-400
-      accentGlow: 'rgba(20, 184, 166, 0.8)',
-    },
-  },
-  {
-    name: 'Royal Purple',
-    id: 'purple',
-    colors: {
-      primary: '#8b5cf6', // violet-500
-      primaryHover: '#a78bfa', // violet-400
-      primaryGlow: 'rgba(139, 92, 246, 0.8)',
-      accent: '#d946ef', // fuchsia-500
-      accentHover: '#e879f9', // fuchsia-400
-      accentGlow: 'rgba(217, 70, 239, 0.8)',
-    },
-  },
-  {
     name: 'Monochrome',
-    id: 'grey',
+    id: 'mono',
     colors: {
-      primary: '#6b7280', // gray-500
-      primaryHover: '#9ca3af', // gray-400
-      primaryGlow: 'rgba(107, 114, 128, 0.8)',
-      accent: '#4b5563', // gray-600
-      accentHover: '#6b7280', // gray-500
-      accentGlow: 'rgba(75, 85, 99, 0.8)',
+      primary: '#F0F6F7',
+      primaryHover: '#FFFFFF',
+      accent: '#919FA5',
+      accentHover: '#F0F6F7',
+      bg: '#0a0a0a',
+      bgAlt: '#111111',
+      surface: '#141414',
+      text: '#F0F6F7',
+      textMuted: '#919FA5',
+      textSubtle: '#747474',
+      border: '#2a2a2a',
+      borderHover: '#3a3a3a',
     },
   },
   {
-    name: 'Cherry Red',
-    id: 'red',
+    name: 'Slate',
+    id: 'slate',
     colors: {
-      primary: '#ef4444', // red-500
-      primaryHover: '#f87171', // red-400
-      primaryGlow: 'rgba(239, 68, 68, 0.8)',
-      accent: '#fb7185', // rose-400
-      accentHover: '#fda4af', // rose-300
-      accentGlow: 'rgba(251, 113, 133, 0.8)',
+      primary: '#94A3B8',
+      primaryHover: '#CBD5E1',
+      accent: '#64748B',
+      accentHover: '#94A3B8',
+      bg: '#0a0a0a',
+      bgAlt: '#0f172a',
+      surface: '#1e293b',
+      text: '#F0F6F7',
+      textMuted: '#94A3B8',
+      textSubtle: '#64748B',
+      border: '#334155',
+      borderHover: '#475569',
+    },
+  },
+  {
+    name: 'Warm Gray',
+    id: 'warm',
+    colors: {
+      primary: '#D6D3D1',
+      primaryHover: '#F5F5F4',
+      accent: '#A8A29E',
+      accentHover: '#D6D3D1',
+      bg: '#0c0a09',
+      bgAlt: '#1c1917',
+      surface: '#292524',
+      text: '#F5F5F4',
+      textMuted: '#A8A29E',
+      textSubtle: '#78716C',
+      border: '#44403C',
+      borderHover: '#57534E',
+    },
+  },
+  {
+    name: 'Ocean',
+    id: 'ocean',
+    colors: {
+      primary: '#67E8F9',
+      primaryHover: '#A5F3FC',
+      accent: '#22D3EE',
+      accentHover: '#67E8F9',
+      bg: '#0a0a0a',
+      bgAlt: '#0c1620',
+      surface: '#0e2433',
+      text: '#F0F6F7',
+      textMuted: '#67E8F9',
+      textSubtle: '#0891B2',
+      border: '#164E63',
+      borderHover: '#0E7490',
+    },
+  },
+  {
+    name: 'Amber',
+    id: 'amber',
+    colors: {
+      primary: '#FCD34D',
+      primaryHover: '#FDE68A',
+      accent: '#F59E0B',
+      accentHover: '#FCD34D',
+      bg: '#0a0a0a',
+      bgAlt: '#1a1406',
+      surface: '#292211',
+      text: '#F0F6F7',
+      textMuted: '#FCD34D',
+      textSubtle: '#B45309',
+      border: '#78350F',
+      borderHover: '#92400E',
+    },
+  },
+  {
+    name: 'Rose',
+    id: 'rose',
+    colors: {
+      primary: '#FB7185',
+      primaryHover: '#FDA4AF',
+      accent: '#F43F5E',
+      accentHover: '#FB7185',
+      bg: '#0a0a0a',
+      bgAlt: '#1a0b12',
+      surface: '#2a1520',
+      text: '#F0F6F7',
+      textMuted: '#FDA4AF',
+      textSubtle: '#FB7185',
+      border: '#4c1d2a',
+      borderHover: '#6b2233',
+    },
+  },
+  {
+    name: 'Emerald',
+    id: 'emerald',
+    colors: {
+      primary: '#34D399',
+      primaryHover: '#6EE7B7',
+      accent: '#10B981',
+      accentHover: '#34D399',
+      bg: '#0a0a0a',
+      bgAlt: '#0c1611',
+      surface: '#122019',
+      text: '#F0F6F7',
+      textMuted: '#6EE7B7',
+      textSubtle: '#10B981',
+      border: '#14532D',
+      borderHover: '#166534',
+    },
+  },
+  {
+    name: 'Lavender',
+    id: 'lavender',
+    colors: {
+      primary: '#C4B5FD',
+      primaryHover: '#DDD6FE',
+      accent: '#A78BFA',
+      accentHover: '#C4B5FD',
+      bg: '#0a0a0a',
+      bgAlt: '#140f1f',
+      surface: '#221a33',
+      text: '#F0F6F7',
+      textMuted: '#C4B5FD',
+      textSubtle: '#A78BFA',
+      border: '#312E81',
+      borderHover: '#4338CA',
+    },
+  },
+  {
+    name: 'Sunset',
+    id: 'sunset',
+    colors: {
+      primary: '#FDBA74',
+      primaryHover: '#FED7AA',
+      accent: '#FB923C',
+      accentHover: '#FDBA74',
+      bg: '#0a0a0a',
+      bgAlt: '#1b1209',
+      surface: '#2a1b10',
+      text: '#F0F6F7',
+      textMuted: '#FDBA74',
+      textSubtle: '#FB923C',
+      border: '#7C2D12',
+      borderHover: '#9A3412',
+    },
+  },
+  {
+    name: 'Cyber',
+    id: 'cyber',
+    colors: {
+      primary: '#22D3EE',
+      primaryHover: '#67E8F9',
+      accent: '#A3E635',
+      accentHover: '#BEF264',
+      bg: '#0a0a0a',
+      bgAlt: '#071416',
+      surface: '#0b1f24',
+      text: '#F0F6F7',
+      textMuted: '#67E8F9',
+      textSubtle: '#22D3EE',
+      border: '#164E63',
+      borderHover: '#0E7490',
     },
   },
 ];

@@ -177,7 +177,10 @@ const App: React.FC = () => {
   // Settings State
   const [showSettings, setShowSettings] = useState(false);
   const [currentThemeId, setCurrentThemeId] = useState(() => {
-    return localStorage.getItem('heartless_theme') || 'pink';
+    return localStorage.getItem('heartless_theme') || 'mono';
+  });
+  const [themeMode, setThemeMode] = useState<'light' | 'dark'>(() => {
+    return (localStorage.getItem('heartless_mode') as 'light' | 'dark') || 'light';
   });
 
   const currentTheme = useMemo(() => getTheme(currentThemeId), [currentThemeId]);
@@ -193,15 +196,58 @@ const App: React.FC = () => {
     const b = num & 255;
     return `rgba(${r}, ${g}, ${b}, ${alpha})`;
   };
+  const modeVars = useMemo(() => {
+    if (themeMode === 'light') {
+      return {
+        bg: '#f2f2f5',
+        bgAlt: '#ffffff',
+        surface: '#f7f7fa',
+        text: '#0f1115',
+        textMuted: '#4b5563',
+        textSubtle: '#6b7280',
+        border: toRgba(currentTheme.colors.primary, 0.25),
+        borderHover: toRgba(currentTheme.colors.primary, 0.45),
+        gradA: toRgba(currentTheme.colors.primary, 0.12),
+        gradB: toRgba(currentTheme.colors.accent, 0.10),
+      };
+    }
+    return {
+      bg: '#0f0f12',
+      bgAlt: '#0d0d12',
+      surface: '#14141a',
+      text: '#f0f6f7',
+      textMuted: '#9aa4ab',
+      textSubtle: '#6b7280',
+      border: toRgba(currentTheme.colors.primary, 0.25),
+      borderHover: toRgba(currentTheme.colors.primary, 0.5),
+      gradA: toRgba(currentTheme.colors.primary, 0.08),
+      gradB: toRgba(currentTheme.colors.accent, 0.06),
+    };
+  }, [currentTheme, themeMode, toRgba]);
+
   const themeVars = useMemo(() => ({
     ['--theme-primary' as any]: currentTheme.colors.primary,
     ['--theme-primary-hover' as any]: currentTheme.colors.primaryHover,
-    ['--theme-primary-glow' as any]: currentTheme.colors.primaryGlow,
     ['--theme-accent' as any]: currentTheme.colors.accent,
     ['--theme-accent-hover' as any]: currentTheme.colors.accentHover,
-    ['--theme-accent-glow' as any]: currentTheme.colors.accentGlow,
-    ['--theme-border' as any]: toRgba(currentTheme.colors.primary, 0.25),
-  }), [currentTheme]);
+    ['--theme-bg' as any]: modeVars.bg,
+    ['--theme-bg-alt' as any]: modeVars.bgAlt,
+    ['--theme-surface' as any]: modeVars.surface,
+    ['--theme-text' as any]: modeVars.text,
+    ['--theme-text-muted' as any]: modeVars.textMuted,
+    ['--theme-text-subtle' as any]: modeVars.textSubtle,
+    ['--theme-border' as any]: modeVars.border,
+    ['--theme-border-hover' as any]: modeVars.borderHover,
+    ['--theme-grad-a' as any]: modeVars.gradA,
+    ['--theme-grad-b' as any]: modeVars.gradB,
+  }), [currentTheme, modeVars]);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    Object.entries(themeVars).forEach(([key, value]) => {
+      root.style.setProperty(key, String(value));
+    });
+  }, [themeVars]);
 
   const shuffledQuotesRef = useRef<string[]>([]);
   const getNextLoadingQuote = useCallback(() => {
@@ -542,13 +588,17 @@ const App: React.FC = () => {
     setCurrentThemeId(themeId);
     localStorage.setItem('heartless_theme', themeId);
   };
+  const handleThemeModeChange = (mode: 'light' | 'dark') => {
+    setThemeMode(mode);
+    localStorage.setItem('heartless_mode', mode);
+  };
 
   // Show loading state while checking auth
   if (isAuthLoading) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center p-8 bg-black" style={themeVars}>
-        <div className="text-[color:var(--theme-primary)] text-2xl font-bold animate-pulse">LOADING...</div>
-        <div className="mt-6 text-center text-2xl text-[color:var(--theme-primary)] italic max-w-md">{loadingQuote}</div>
+      <div className="flex-1 flex flex-col items-center justify-center p-8 bg-[var(--theme-bg,#0a0a0a)]" style={themeVars}>
+        <div className="font-mono text-sm uppercase tracking-wide text-[var(--theme-text-muted,#919FA5)]">Loading...</div>
+        <div className="mt-4 text-center text-sm text-[var(--theme-text-subtle,#747474)] italic max-w-md">{loadingQuote}</div>
       </div>
     );
   }
@@ -565,9 +615,9 @@ const App: React.FC = () => {
   // Show loading state while fetching partners
   if (state.isLoadingPartners) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center p-8 bg-black" style={themeVars}>
-        <div className="text-[color:var(--theme-primary)] text-xl font-bold animate-pulse">LOADING PARTNERS...</div>
-        <div className="mt-6 text-center text-2xl text-[color:var(--theme-primary)] italic max-w-md">{loadingQuote}</div>
+      <div className="flex-1 flex flex-col items-center justify-center p-8 bg-[var(--theme-bg,#0a0a0a)]" style={themeVars}>
+        <div className="font-mono text-sm uppercase tracking-wide text-[var(--theme-text-muted,#919FA5)]">Loading Partners...</div>
+        <div className="mt-4 text-center text-sm text-[var(--theme-text-subtle,#747474)] italic max-w-md">{loadingQuote}</div>
       </div>
     );
   }
@@ -592,144 +642,144 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className="flex-1 flex flex-col md:flex-row overflow-hidden bg-[#0f0f12]" style={themeVars}>
+    <div className="flex-1 flex flex-col md:flex-row overflow-hidden bg-[var(--theme-bg,#0a0a0a)]" style={themeVars}>
       {/* Sidebar */}
-      <div className="order-last md:order-first w-full md:w-24 flex md:flex-col flex-row items-center md:py-10 py-3 border-t md:border-t-0 md:border-r border-white/5 bg-black/40 backdrop-blur-xl shrink-0 fixed md:static bottom-0 left-0 z-50">
+      <div className="order-last md:order-first w-full md:w-20 flex md:flex-col flex-row items-center md:py-8 py-3 border-t md:border-t-0 md:border-r border-[var(--theme-border,#2a2a2a)] bg-[var(--theme-bg,#0a0a0a)] shrink-0 fixed md:static bottom-0 left-0 z-50">
         <button
-          className="w-10 h-10 md:w-12 md:h-12 glass flex items-center justify-center md:mb-10 mb-0 ml-4 md:ml-0 animate-pulse"
+          className="w-9 h-9 md:w-10 md:h-10 flex items-center justify-center md:mb-8 mb-0 ml-4 md:ml-0 rounded border border-[var(--theme-border,#2a2a2a)] hover:border-[var(--theme-border-hover,#3a3a3a)] transition-colors"
           style={{ color: currentTheme.colors.primary }}
           onClick={() => setShowSettings(true)}
           aria-label="Open theme settings"
         >
-          <Heart size={24} fill="currentColor" />
+          <Heart size={18} fill="currentColor" />
         </button>
-        <div className="flex-1 flex md:flex-col flex-row gap-4 md:gap-8 px-4 md:px-0 overflow-x-auto md:overflow-visible" data-tutorial="tabs">
-          <NavIcon icon={<User size={20}/>} active={state.currentTab === 'dex'} onClick={() => setState(s => ({...s, currentTab: 'dex'}))} label="DEX" />
-          <NavIcon icon={<Activity size={20}/>} active={state.currentTab === 'stats'} onClick={() => setState(s => ({...s, currentTab: 'stats'}))} label="STATS" />
-          <NavIcon icon={<BookOpen size={20}/>} active={state.currentTab === 'lore'} onClick={() => setState(s => ({...s, currentTab: 'lore'}))} label="INTEL" />
-          <NavIcon icon={<History size={20}/>} active={state.currentTab === 'history'} onClick={() => setState(s => ({...s, currentTab: 'history'}))} label="LOGS" />
+        <div className="flex-1 flex md:flex-col flex-row gap-2 md:gap-4 px-4 md:px-0 overflow-x-auto md:overflow-visible" data-tutorial="tabs">
+          <NavIcon icon={<User size={18}/>} active={state.currentTab === 'dex'} onClick={() => setState(s => ({...s, currentTab: 'dex'}))} label="DEX" />
+          <NavIcon icon={<Activity size={18}/>} active={state.currentTab === 'stats'} onClick={() => setState(s => ({...s, currentTab: 'stats'}))} label="STATS" />
+          <NavIcon icon={<BookOpen size={18}/>} active={state.currentTab === 'lore'} onClick={() => setState(s => ({...s, currentTab: 'lore'}))} label="INTEL" />
+          <NavIcon icon={<History size={18}/>} active={state.currentTab === 'history'} onClick={() => setState(s => ({...s, currentTab: 'history'}))} label="LOGS" />
         </div>
-        <div className="mt-0 md:mt-auto flex md:flex-col flex-row gap-4 md:gap-8 mr-4 md:mr-0">
+        <div className="mt-0 md:mt-auto flex md:flex-col flex-row gap-2 md:gap-4 mr-4 md:mr-0">
           <div data-tutorial="new-button">
-            <NavIcon icon={<Plus size={20}/>} active={isOnboarding} onClick={startOnboarding} label="NEW" />
+            <NavIcon icon={<Plus size={18}/>} active={isOnboarding} onClick={startOnboarding} label="NEW" />
           </div>
-          <NavIcon icon={<Power size={20}/>} onClick={async () => {
+          <NavIcon icon={<Power size={18}/>} onClick={async () => {
             try {
               await firebaseSignOut();
             } catch (error) {
               console.error('Failed to sign out:', error);
             }
-          }} label="OFF" color="text-red-500" />
+          }} label="OFF" color="text-red-400" />
         </div>
       </div>
 
       <div className="flex-1 flex flex-col overflow-hidden min-h-0 pb-16 md:pb-0">
         {/* Header */}
-        <header className="h-auto md:h-20 flex flex-col md:flex-row md:items-center md:justify-between px-4 md:px-10 py-4 md:py-0 border-b border-white/5 bg-black/20 gap-4">
-          <div className="flex items-center gap-4 md:gap-6 flex-wrap">
-            <h2 className="text-lg md:text-xl font-bold tracking-tighter uppercase text-white/90">
+        <header className="h-auto md:h-16 flex flex-col md:flex-row md:items-center md:justify-between px-4 md:px-8 py-3 md:py-0 border-b border-[var(--theme-border,#2a2a2a)] bg-[var(--theme-bg-alt,#111111)] gap-3">
+          <div className="flex items-center gap-3 md:gap-4 flex-wrap">
+            <h2 className="text-sm md:text-base font-semibold tracking-tight text-[var(--theme-text,#F0F6F7)]">
                {isOnboarding ? 'Onboarding Protocol' : (selectedPartner?.name || 'Database')}
             </h2>
             {!isOnboarding && selectedPartner && (
-               <div className="flex gap-2 flex-wrap">
+               <div className="flex gap-2 flex-wrap items-center">
                   <TagPill variant="pink">{selectedPartner.relationshipType}</TagPill>
-                  <span className="text-[10px] font-mono text-white/20 self-center">#{selectedPartner.dexNumber}</span>
+                  <span className="font-mono text-[10px] text-[var(--theme-text-subtle,#747474)]">#{selectedPartner.dexNumber}</span>
                </div>
             )}
           </div>
           {!isOnboarding && (
-            <div className="flex items-center gap-4 flex-wrap">
-              <div className="flex -space-x-3 overflow-x-auto" data-tutorial="partner-list">
+            <div className="flex items-center gap-3 flex-wrap">
+              <div className="flex -space-x-2 overflow-x-auto" data-tutorial="partner-list">
                 {state.partners.map(p => (
-                  <button key={p.id} onClick={() => setState(s => ({...s, selectedPartnerId: p.id}))} className={`w-10 h-10 rounded-full border-2 overflow-hidden transition-all hover:scale-110 active:scale-95 ${state.selectedPartnerId === p.id ? 'border-[#ff007a] ring-2 ring-[#ff007a]/20' : 'border-white/10 opacity-40 hover:opacity-100'}`}>
-                    <img src={p.spriteUrl} alt={p.name} className="w-full h-full object-cover mix-blend-screen" />
+                  <button key={p.id} onClick={() => setState(s => ({...s, selectedPartnerId: p.id}))} className={`w-8 h-8 rounded border overflow-hidden transition-all hover:scale-105 ${state.selectedPartnerId === p.id ? 'border-[var(--theme-primary,#F0F6F7)] opacity-100' : 'border-[var(--theme-border,#2a2a2a)] opacity-50 hover:opacity-100'}`}>
+                    <img src={p.spriteUrl} alt={p.name} className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all" />
                   </button>
                 ))}
               </div>
-              <button onClick={() => setState(s => ({...s, showPRD: true}))} className="p-2 hover:bg-white/5 rounded-full text-white/30 transition-colors"><SettingsIcon size={18} /></button>
+              <button onClick={() => setState(s => ({...s, showPRD: true}))} className="p-1.5 hover:bg-[var(--theme-surface,#141414)] rounded transition-colors text-[var(--theme-text-subtle,#747474)] hover:text-[var(--theme-text,#F0F6F7)]"><SettingsIcon size={16} /></button>
             </div>
           )}
         </header>
 
         <main className="flex-1 flex overflow-hidden min-h-0">
           {isOnboarding ? (
-            <div className="flex-1 flex flex-col p-4 md:p-10 max-w-3xl mx-auto w-full">
-              <div className="flex-1 overflow-y-auto space-y-6 pr-0 md:pr-4 custom-scrollbar">
+            <div className="flex-1 flex flex-col p-4 md:p-8 max-w-3xl mx-auto w-full">
+              <div className="flex-1 overflow-y-auto space-y-4 pr-0 md:pr-4 custom-scrollbar">
                 {chatHistory.map((msg, i) => (
-                  <div key={i} className={`flex ${msg.role === 'Cupid' ? 'justify-start' : 'justify-end'} animate-in slide-in-from-bottom-2`}>
-                    <div className={`max-w-[80%] p-6 ${msg.role === 'Cupid' ? 'chat-bubble-cupid' : 'chat-bubble-user'} shadow-xl`}>
-                      <div className="text-[9px] font-bold uppercase tracking-[0.3em] mb-2 opacity-30">{msg.role} Protocol</div>
-                      <p className="text-sm leading-relaxed text-white/90">{msg.text}</p>
+                  <div key={i} className={`flex ${msg.role === 'Cupid' ? 'justify-start' : 'justify-end'}`}>
+                    <div className={`max-w-[80%] p-4 ${msg.role === 'Cupid' ? 'chat-bubble-cupid' : 'chat-bubble-user'}`}>
+                      <div className="font-mono text-[9px] uppercase tracking-wide mb-2 text-[var(--theme-text-subtle,#747474)]">{msg.role}</div>
+                      <p className="text-sm leading-relaxed text-[var(--theme-text,#F0F6F7)]">{msg.text}</p>
                     </div>
                   </div>
                 ))}
-                {isProcessing && <div className="chat-bubble-cupid p-4 w-16 animate-pulse ml-2" />}
+                {isProcessing && <div className="chat-bubble-cupid p-4 w-16 ml-2"><div className="w-2 h-2 rounded-full bg-[var(--theme-text-subtle,#747474)] animate-pulse" /></div>}
                 <div ref={chatBottomRef} />
               </div>
-              <div className="mt-4 md:mt-8 flex gap-3 md:gap-4 p-4 glass rounded-3xl border border-white/5 items-center">
+              <div className="mt-4 md:mt-6 flex gap-3 p-3 bg-[var(--theme-surface,#141414)] rounded border border-[var(--theme-border,#2a2a2a)] items-center">
                 {onboardingStep === 1 && (
-                  <button onClick={() => fileInputRef.current?.click()} className={`p-4 rounded-2xl transition-all shrink-0 ${uploadedImage ? 'bg-green-500/20 text-green-400 border border-green-500/20' : 'bg-indigo-500/20 text-[color:var(--theme-accent)] animate-pulse border border-indigo-500/30'}`}>
-                    {uploadedImage ? <CheckCircle2 size={24} /> : <Camera size={24} />}
+                  <button onClick={() => fileInputRef.current?.click()} className={`p-3 rounded transition-colors shrink-0 border ${uploadedImage ? 'bg-green-950/30 text-green-400 border-green-900/50' : 'bg-[var(--theme-bg-alt,#111111)] text-[var(--theme-text-muted,#919FA5)] border-[var(--theme-border,#2a2a2a)] hover:border-[var(--theme-border-hover,#3a3a3a)]'}`}>
+                    {uploadedImage ? <CheckCircle2 size={20} /> : <Camera size={20} />}
                   </button>
                 )}
-                <input className="flex-1 bg-transparent px-4 text-white outline-none placeholder:text-white/10 text-sm" value={userInput} onChange={e => setUserInput(e.target.value)} onKeyPress={e => e.key === 'Enter' && handleOnboardingChat()} placeholder={onboardingStep === 1 ? "Upload evidence first..." : "Enter response..."} disabled={onboardingStep === 1 && !uploadedImage} />
-                <button onClick={handleOnboardingChat} disabled={onboardingStep === 1 && !uploadedImage} className="bg-[#7000ff] hover:bg-[#8521ff] text-white p-3 md:p-4 rounded-2xl shadow-lg transition-all active:scale-95 disabled:opacity-20"><ArrowRight size={24} /></button>
+                <input className="flex-1 bg-transparent px-3 text-[var(--theme-text,#F0F6F7)] outline-none placeholder:text-[var(--theme-text-subtle,#747474)] text-sm" value={userInput} onChange={e => setUserInput(e.target.value)} onKeyPress={e => e.key === 'Enter' && handleOnboardingChat()} placeholder={onboardingStep === 1 ? "Upload evidence first..." : "Enter response..."} disabled={onboardingStep === 1 && !uploadedImage} />
+                <button onClick={handleOnboardingChat} disabled={onboardingStep === 1 && !uploadedImage} className="bg-[var(--theme-surface,#141414)] hover:bg-[var(--theme-bg-alt,#111111)] text-[var(--theme-text,#F0F6F7)] p-2.5 rounded border border-[var(--theme-border,#2a2a2a)] hover:border-[var(--theme-border-hover,#3a3a3a)] transition-colors disabled:opacity-30"><ArrowRight size={20} /></button>
               </div>
               <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageUpload} />
             </div>
           ) : selectedPartner ? (
-            <div className="flex-1 flex flex-col xl:flex-row p-4 md:p-10 gap-6 md:gap-10 overflow-hidden">
+            <div className="flex-1 flex flex-col xl:flex-row p-4 md:p-8 gap-4 md:gap-6 overflow-hidden">
               {/* Profile Card Left */}
-              <div className="w-full xl:w-80 flex flex-col gap-6 shrink-0">
-              <div className={`glass p-8 flex-1 flex flex-col items-center justify-center relative overflow-hidden transition-all duration-700 ${isTerminated ? 'border-red-600 grayscale bg-red-950/5 shadow-[0_0_40px_rgba(220,38,38,0.2)]' : 'border-white/5'}`}>
+              <div className="w-full xl:w-72 flex flex-col gap-4 shrink-0">
+              <div className={`glass p-6 flex-1 flex flex-col items-center justify-center relative overflow-hidden transition-colors duration-300 ${isTerminated ? 'border-red-900/50 bg-red-950/10' : ''}`}>
                 <button
                   onClick={() => setIsEditing(!isEditing)}
-                  className={`absolute top-4 right-4 p-2 rounded-full border transition-colors ${isEditing ? 'border-[color:var(--theme-primary)] text-[color:var(--theme-primary)]' : 'border-[color:var(--theme-border)] text-white/60 hover:text-white hover:border-[color:var(--theme-primary)]'}`}
+                  className={`absolute top-3 right-3 p-1.5 rounded border transition-colors ${isEditing ? 'border-[var(--theme-primary,#F0F6F7)] text-[var(--theme-primary,#F0F6F7)]' : 'border-[var(--theme-border,#2a2a2a)] text-[var(--theme-text-subtle,#747474)] hover:text-[var(--theme-text,#F0F6F7)] hover:border-[var(--theme-border-hover,#3a3a3a)]'}`}
                   aria-label={isEditing ? "Save changes" : "Edit profile"}
                 >
                   {isEditing ? <Save size={14} /> : <Edit2 size={14} />}
                 </button>
-                <div className="relative w-full aspect-square flex items-center justify-center bg-white/5 rounded-3xl overflow-hidden">
-                     <img src={selectedPartner.spriteUrl} className={`w-3/4 h-3/4 object-contain z-10 transition-all duration-700 ${isTerminated ? 'opacity-20 scale-90' : 'float-animation mix-blend-screen'}`} />
+                <div className="relative w-full aspect-square flex items-center justify-center bg-[var(--theme-bg-alt,#111111)] rounded overflow-hidden">
+                     <img src={selectedPartner.spriteUrl} className={`w-3/4 h-3/4 object-contain z-10 transition-all duration-300 ${isTerminated ? 'opacity-20 grayscale' : 'grayscale hover:grayscale-0'}`} />
                      {isTerminated && (
-                       <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none animate-in zoom-in duration-500">
-                          <X size={160} className="text-red-600 drop-shadow-[0_0_20px_rgba(220,38,38,1)] opacity-80" strokeWidth={5} />
+                       <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none">
+                          <X size={120} className="text-red-500 opacity-60" strokeWidth={4} />
                        </div>
                      )}
                   </div>
-                  <div className="mt-8 text-center z-10 w-full space-y-4">
+                  <div className="mt-6 text-center z-10 w-full space-y-3">
                     {isEditing ? (
-                      <input 
-                        className="text-2xl font-bold tracking-tighter uppercase bg-white/5 border border-white/10 rounded-xl px-4 py-2 w-full text-center outline-none focus:border-[#ff007a]/50" 
+                      <input
+                        className="text-lg font-semibold tracking-tight bg-[var(--theme-bg-alt,#111111)] border border-[var(--theme-border,#2a2a2a)] rounded px-3 py-1.5 w-full text-center text-[var(--theme-text,#F0F6F7)] outline-none focus:border-[var(--theme-border-hover,#3a3a3a)]"
                         value={selectedPartner.name}
                         onChange={(e) => updatePartner({ name: e.target.value })}
                       />
                     ) : (
-                      <div className={`text-2xl font-bold tracking-tighter uppercase transition-all ${isTerminated ? 'text-red-600 line-through' : 'text-white/90'}`}>{selectedPartner.name}</div>
+                      <div className={`text-lg font-semibold tracking-tight transition-colors ${isTerminated ? 'text-red-400 line-through' : 'text-[var(--theme-text,#F0F6F7)]'}`}>{selectedPartner.name}</div>
                     )}
                     <div className="flex justify-center"><CompassionMeter current={selectedPartner.currentCompassion} max={selectedPartner.totalCompassion} big /></div>
                   </div>
                 </div>
                 
-                <div className={`glass p-6 space-y-4 transition-all duration-700 ${isTerminated ? 'bg-red-900/20 border-red-500/40' : 'border-white/5'}`}>
-                  <h4 className={`text-[10px] font-bold uppercase tracking-[0.3em] flex items-center justify-between gap-2 ${isTerminated ? 'text-red-400' : 'text-white/30'}`}>
-                    {isTerminated ? <><AlertCircle size={14}/> TERMINATION ALERT</> : "Cupid Intel"}
+                <div className={`glass p-4 space-y-3 transition-colors duration-300 ${isTerminated ? 'bg-red-950/20 border-red-900/50' : ''}`}>
+                  <h4 className={`font-mono text-[10px] uppercase tracking-wide flex items-center justify-between gap-2 ${isTerminated ? 'text-red-400' : 'text-[var(--theme-text-subtle,#747474)]'}`}>
+                    {isTerminated ? <><AlertCircle size={12}/> Termination Alert</> : "Intel"}
                     <button
                       onClick={() => setIsEditing(!isEditing)}
-                      className={`p-1 rounded-full border transition-colors ${isEditing ? 'border-[color:var(--theme-primary)] text-[color:var(--theme-primary)]' : 'border-[color:var(--theme-border)] text-white/40 hover:text-white hover:border-[color:var(--theme-primary)]'}`}
+                      className={`p-1 rounded border transition-colors ${isEditing ? 'border-[var(--theme-primary,#F0F6F7)] text-[var(--theme-primary,#F0F6F7)]' : 'border-[var(--theme-border,#2a2a2a)] text-[var(--theme-text-subtle,#747474)] hover:text-[var(--theme-text,#F0F6F7)] hover:border-[var(--theme-border-hover,#3a3a3a)]'}`}
                       aria-label={isEditing ? "Save changes" : "Edit profile"}
                     >
-                      {isEditing ? <Save size={12} /> : <Edit2 size={12} />}
+                      {isEditing ? <Save size={10} /> : <Edit2 size={10} />}
                     </button>
                   </h4>
                   {isEditing ? (
-                    <textarea 
-                      className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-xs text-white/60 outline-none focus:border-[#ff007a]/50 italic min-h-[80px]"
+                    <textarea
+                      className="w-full bg-[var(--theme-bg-alt,#111111)] border border-[var(--theme-border,#2a2a2a)] rounded p-2 text-xs text-[var(--theme-text-muted,#919FA5)] outline-none focus:border-[var(--theme-border-hover,#3a3a3a)] min-h-[60px]"
                       value={selectedPartner.flavorText}
                       onChange={(e) => updatePartner({ flavorText: e.target.value })}
                     />
                   ) : (
-                    <p className={`text-xs leading-relaxed italic ${isTerminated ? 'text-red-200' : 'text-white/60'}`}>
+                    <p className={`text-xs leading-relaxed ${isTerminated ? 'text-red-300' : 'text-[var(--theme-text-muted,#919FA5)]'}`}>
                       {isTerminated ? terminationMessage : `"${selectedPartner.flavorText}"`}
                     </p>
                   )}
@@ -737,10 +787,10 @@ const App: React.FC = () => {
               </div>
 
               {/* Tabs Right */}
-              <div className="flex-1 overflow-y-auto pr-0 md:pr-4 space-y-6 md:space-y-8 custom-scrollbar">
+              <div className="flex-1 overflow-y-auto pr-0 md:pr-4 space-y-4 md:space-y-6 custom-scrollbar">
                 {state.currentTab === 'dex' && (
-                  <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                        <DataCard title="TRAITS & ABILITIES" isEditing={isEditing} onToggleEdit={() => setIsEditing(!isEditing)}>
                          <div className="space-y-4">
                            <TraitList 
@@ -759,33 +809,33 @@ const App: React.FC = () => {
                            />
                          </div>
                        </DataCard>
-                       <DataCard title="HIDDEN SKILL" className="-mt-2" isEditing={isEditing} onToggleEdit={() => setIsEditing(!isEditing)}>
-                          <div className="p-2 transition-all h-full min-h-[180px] flex flex-col justify-center">
+                       <DataCard title="Hidden Skill" className="" isEditing={isEditing} onToggleEdit={() => setIsEditing(!isEditing)}>
+                          <div className="py-2 transition-all h-full min-h-[140px] flex flex-col justify-center">
                              {isEditing ? (
-                               <div className="space-y-3">
-                                 <input 
-                                  className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-1 text-xs text-[color:var(--theme-accent)] font-bold uppercase outline-none"
+                               <div className="space-y-2">
+                                 <input
+                                  className="w-full bg-[var(--theme-bg-alt,#111111)] border border-[var(--theme-border,#2a2a2a)] rounded px-2 py-1 font-mono text-xs text-[var(--theme-accent,#919FA5)] uppercase outline-none focus:border-[var(--theme-border-hover,#3a3a3a)]"
                                   value={selectedPartner.hiddenSkill.name}
                                   onChange={(e) => updatePartner({ hiddenSkill: { ...selectedPartner.hiddenSkill, name: e.target.value } })}
                                  />
-                                 <textarea 
-                                  className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-1 text-[11px] text-white/60 outline-none h-12"
+                                 <textarea
+                                  className="w-full bg-[var(--theme-bg-alt,#111111)] border border-[var(--theme-border,#2a2a2a)] rounded px-2 py-1 text-xs text-[var(--theme-text-muted,#919FA5)] outline-none focus:border-[var(--theme-border-hover,#3a3a3a)] h-12"
                                   value={selectedPartner.hiddenSkill.description}
                                   onChange={(e) => updatePartner({ hiddenSkill: { ...selectedPartner.hiddenSkill, description: e.target.value } })}
                                  />
                                </div>
                              ) : (
                                <div className="space-y-2 text-center">
-                                 <div className="text-[color:var(--theme-accent)] font-bold uppercase text-xs flex items-center justify-center gap-2 break-words"><Award size={14}/> {selectedPartner.hiddenSkill?.name}</div>
-                                 <p className="text-[11px] text-white/60 italic break-words">"{selectedPartner.hiddenSkill?.description}"</p>
+                                 <div className="text-[var(--theme-accent,#919FA5)] font-mono text-xs uppercase flex items-center justify-center gap-2 break-words"><Award size={14}/> {selectedPartner.hiddenSkill?.name}</div>
+                                 <p className="text-xs text-[var(--theme-text-muted,#919FA5)] break-words">"{selectedPartner.hiddenSkill?.description}"</p>
                                </div>
                              )}
                           </div>
                        </DataCard>
                     </div>
 
-                    <DataCard title="TYPE EFFECTIVENESS" isEditing={isEditing} onToggleEdit={() => setIsEditing(!isEditing)}>
-                       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-10">
+                    <DataCard title="Type Effectiveness" isEditing={isEditing} onToggleEdit={() => setIsEditing(!isEditing)}>
+                       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
                           <StringListEditor 
                             label="EFFECTIVE AGAINST" 
                             items={selectedPartner.effectiveness.effectiveAgainst}
@@ -806,21 +856,20 @@ const App: React.FC = () => {
                        </div>
                     </DataCard>
 
-                    <DataCard title="EVENT LOG" className="relative group" showEditToggle={false}>
-                       <div className="absolute -top-4 right-4"><Sparkles size={24} className="text-[color:var(--theme-accent)] opacity-20 group-hover:opacity-100 transition-opacity" /></div>
-                       <div className="space-y-6">
+                    <DataCard title="Event Log" className="relative" showEditToggle={false}>
+                       <div className="space-y-4">
                           <div data-tutorial="actions">
                             {!isTerminated && (
-                              <button onClick={startEmotionalUpdate} className="w-full bg-[#7000ff]/10 hover:bg-[#7000ff]/20 text-[color:var(--theme-accent)] py-4 rounded-2xl text-[11px] font-bold uppercase tracking-[0.2em] border border-[#7000ff]/20 flex items-center justify-center gap-3 transition-all">
-                                 <MessageSquare size={16} /> INITIALIZE EMOTIONAL UPDATE
+                              <button onClick={startEmotionalUpdate} className="w-full bg-[var(--theme-surface,#141414)] hover:bg-[var(--theme-bg-alt,#111111)] text-[var(--theme-text-muted,#919FA5)] hover:text-[var(--theme-text,#F0F6F7)] py-3 rounded font-mono text-[10px] uppercase tracking-wide border border-[var(--theme-border,#2a2a2a)] hover:border-[var(--theme-border-hover,#3a3a3a)] flex items-center justify-center gap-2 transition-colors">
+                                 <MessageSquare size={14} /> Emotional Update
                               </button>
                             )}
                           </div>
-                          <div className="space-y-3 p-5 bg-white/5 rounded-2xl border border-white/5">
-                             <input className="w-full bg-transparent px-2 py-2 text-sm text-white outline-none placeholder:text-white/10 border-b border-white/10" value={manualLogDesc} onChange={e => setManualLogDesc(e.target.value)} placeholder="Enter interaction summary..." />
-                             <div className="flex gap-4">
-                               <button onClick={() => logEvent(-1, manualLogDesc || "Damage reported")} disabled={!manualLogDesc.trim()} className="flex-1 bg-red-500/10 hover:bg-red-500/20 text-red-500 py-2.5 rounded-xl text-[10px] font-bold uppercase border border-red-500/10 transition-all disabled:opacity-20">REPORT DAMAGE</button>
-                               <button onClick={() => logEvent(1, manualLogDesc || "Growth reported")} disabled={!manualLogDesc.trim()} className="flex-1 bg-green-500/10 hover:bg-green-500/20 text-green-500 py-2.5 rounded-xl text-[10px] font-bold uppercase border border-green-500/10 transition-all disabled:opacity-20">REPORT GROWTH</button>
+                          <div className="space-y-3 p-4 bg-[var(--theme-bg-alt,#111111)] rounded border border-[var(--theme-border,#2a2a2a)]">
+                             <input className="w-full bg-transparent px-2 py-1.5 text-sm text-[var(--theme-text,#F0F6F7)] outline-none placeholder:text-[var(--theme-text-subtle,#747474)] border-b border-[var(--theme-border,#2a2a2a)] focus:border-[var(--theme-border-hover,#3a3a3a)]" value={manualLogDesc} onChange={e => setManualLogDesc(e.target.value)} placeholder="Enter interaction summary..." />
+                             <div className="flex gap-3">
+                               <button onClick={() => logEvent(-1, manualLogDesc || "Damage reported")} disabled={!manualLogDesc.trim()} className="flex-1 bg-transparent hover:bg-red-950/30 text-red-400 py-2 rounded font-mono text-[10px] uppercase border border-red-900/50 hover:border-red-700 transition-colors disabled:opacity-30">Damage</button>
+                               <button onClick={() => logEvent(1, manualLogDesc || "Growth reported")} disabled={!manualLogDesc.trim()} className="flex-1 bg-transparent hover:bg-green-950/30 text-green-400 py-2 rounded font-mono text-[10px] uppercase border border-green-900/50 hover:border-green-700 transition-colors disabled:opacity-30">Growth</button>
                              </div>
                           </div>
                        </div>
@@ -829,30 +878,30 @@ const App: React.FC = () => {
                 )}
 
                 {state.currentTab === 'stats' && (
-                  <div className="space-y-8 animate-in fade-in slide-in-from-right-4">
-                    <div className="flex flex-col lg:flex-row gap-6 items-stretch">
-                       <DataCard title="BASE STATS" className="flex-1" isEditing={isEditing} onToggleEdit={() => setIsEditing(!isEditing)}>
-                          <div className="space-y-5 py-2">
+                  <div className="space-y-6">
+                    <div className="flex flex-col lg:flex-row gap-4 items-stretch">
+                       <DataCard title="Base Stats" className="flex-1" isEditing={isEditing} onToggleEdit={() => setIsEditing(!isEditing)}>
+                          <div className="space-y-4 py-2">
                              {(['compassion', 'smarts', 'looks', 'personality', 'reliability', 'chemistry'] as const).map(key => (
-                               <div key={key} className="space-y-2">
+                               <div key={key} className="space-y-1">
                                  {isEditing && (
-                                   <input 
-                                    type="range" min="0" max="100" 
-                                    className="w-full accent-[#ff007a]" 
-                                    value={selectedPartner.stats[key]} 
+                                   <input
+                                    type="range" min="0" max="100"
+                                    className="w-full accent-[var(--theme-primary,#F0F6F7)] h-1"
+                                    value={selectedPartner.stats[key]}
                                     onChange={(e) => updatePartner({ stats: { ...selectedPartner.stats, [key]: parseInt(e.target.value) } })}
                                    />
                                  )}
-                                 <StatBar 
-                                  label={key === 'compassion' ? 'Compassion' : key.charAt(0).toUpperCase() + key.slice(1)} 
-                                  value={selectedPartner.stats[key]} 
-                                  color={key === 'compassion' ? 'bg-red-500' : key === 'smarts' ? 'bg-indigo-500' : key === 'looks' ? 'bg-cyan-500' : key === 'personality' ? 'bg-pink-500' : key === 'reliability' ? 'bg-green-500' : 'bg-amber-500'} 
+                                 <StatBar
+                                  label={key === 'compassion' ? 'Compassion' : key.charAt(0).toUpperCase() + key.slice(1)}
+                                  value={selectedPartner.stats[key]}
+                                  color="bg-[var(--theme-primary,#F0F6F7)]"
                                  />
                                </div>
                              ))}
                           </div>
                        </DataCard>
-                       <DataCard title="CONNECTION RADAR" className="w-full lg:w-72 flex items-center justify-center" showEditToggle={false}>
+                       <DataCard title="Connection Radar" className="w-full lg:w-64 flex items-center justify-center" showEditToggle={false}>
                           <RadarChart stats={[
                              { label: 'Compassion', value: selectedPartner.stats?.compassion || 0 },
                              { label: 'Smarts', value: selectedPartner.stats?.smarts || 0 },
@@ -864,13 +913,13 @@ const App: React.FC = () => {
                        </DataCard>
                     </div>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                       <DataCard title="RELATIONSHIP LEVEL" isEditing={isEditing} onToggleEdit={() => setIsEditing(!isEditing)}>
-                          <div className="flex items-center gap-4 py-4 h-full">
-                             <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center text-[color:var(--theme-primary)]"><Award size={24}/></div>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                       <DataCard title="Relationship Level" isEditing={isEditing} onToggleEdit={() => setIsEditing(!isEditing)}>
+                          <div className="flex items-center gap-3 py-2 h-full">
+                             <div className="w-10 h-10 rounded bg-[var(--theme-bg-alt,#111111)] flex items-center justify-center text-[var(--theme-primary,#F0F6F7)]"><Award size={20}/></div>
                              {isEditing ? (
-                               <select 
-                                className="flex-1 bg-zinc-900 border border-white/10 rounded-xl px-4 py-2 text-sm text-white outline-none uppercase tracking-tighter"
+                               <select
+                                className="flex-1 bg-[var(--theme-bg-alt,#111111)] border border-[var(--theme-border,#2a2a2a)] rounded px-3 py-1.5 text-sm text-[var(--theme-text,#F0F6F7)] outline-none focus:border-[var(--theme-border-hover,#3a3a3a)]"
                                 value={selectedPartner.relationshipType}
                                 onChange={(e) => updatePartner({ relationshipType: e.target.value as RelationshipType })}
                                >
@@ -879,16 +928,16 @@ const App: React.FC = () => {
                                 ))}
                                </select>
                              ) : (
-                               <div className="text-sm font-bold text-white/90 leading-relaxed uppercase tracking-widest">{selectedPartner.relationshipType}</div>
+                               <div className="text-sm font-medium text-[var(--theme-text,#F0F6F7)]">{selectedPartner.relationshipType}</div>
                              )}
                           </div>
                        </DataCard>
-                       <DataCard title="CURRENT STATUS" isEditing={isEditing} onToggleEdit={() => setIsEditing(!isEditing)}>
-                          <div className="flex items-center gap-4 py-4 h-full">
-                             <div className={`w-3 h-3 rounded-full ${selectedPartner.status === 'ACTIVE' ? 'bg-green-500 shadow-[0_0_10px_#22c55e]' : 'bg-red-500'} animate-pulse`}></div>
+                       <DataCard title="Current Status" isEditing={isEditing} onToggleEdit={() => setIsEditing(!isEditing)}>
+                          <div className="flex items-center gap-3 py-2 h-full">
+                             <div className={`w-2 h-2 rounded-full ${selectedPartner.status === 'ACTIVE' ? 'bg-green-500' : 'bg-red-500'}`}></div>
                              {isEditing ? (
-                               <select 
-                                className="flex-1 bg-zinc-900 border border-white/10 rounded-xl px-4 py-2 text-sm text-white outline-none"
+                               <select
+                                className="flex-1 bg-[var(--theme-bg-alt,#111111)] border border-[var(--theme-border,#2a2a2a)] rounded px-3 py-1.5 text-sm text-[var(--theme-text,#F0F6F7)] outline-none focus:border-[var(--theme-border-hover,#3a3a3a)]"
                                 value={selectedPartner.status}
                                 onChange={(e) => updatePartner({ status: e.target.value as any })}
                                >
@@ -897,7 +946,7 @@ const App: React.FC = () => {
                                  <option value="TERMINATED">TERMINATED</option>
                                </select>
                              ) : (
-                               <div className="text-lg font-bold text-white uppercase tracking-widest">{selectedPartner.status}</div>
+                               <div className="font-mono text-sm text-[var(--theme-text,#F0F6F7)] uppercase">{selectedPartner.status}</div>
                              )}
                           </div>
                        </DataCard>
@@ -906,31 +955,31 @@ const App: React.FC = () => {
                 )}
 
                 {state.currentTab === 'lore' && (
-                  <div className="space-y-8 animate-in fade-in slide-in-from-right-4">
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                       <DataCard title="MEETING DATA" isEditing={isEditing} onToggleEdit={() => setIsEditing(!isEditing)}>
-                          <div className="flex items-start gap-4 py-2">
-                             <MapPin size={20} className="text-cyan-400 shrink-0 mt-1" />
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                       <DataCard title="Meeting Data" isEditing={isEditing} onToggleEdit={() => setIsEditing(!isEditing)}>
+                          <div className="flex items-start gap-3 py-2">
+                             <MapPin size={18} className="text-[var(--theme-accent,#919FA5)] shrink-0 mt-0.5" />
                              <div className="flex-1">
-                                <div className="text-[10px] text-white/20 uppercase tracking-widest mb-1">Deployment Zone</div>
+                                <div className="font-mono text-[10px] text-[var(--theme-text-subtle,#747474)] uppercase tracking-wide mb-1">Location</div>
                                 {isEditing ? (
-                                  <input 
-                                    className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-1 text-sm text-white outline-none"
+                                  <input
+                                    className="w-full bg-[var(--theme-bg-alt,#111111)] border border-[var(--theme-border,#2a2a2a)] rounded px-2 py-1 text-sm text-[var(--theme-text,#F0F6F7)] outline-none focus:border-[var(--theme-border-hover,#3a3a3a)]"
                                     value={selectedPartner.meetingLocation}
                                     onChange={(e) => updatePartner({ meetingLocation: e.target.value })}
                                   />
                                 ) : (
-                                  <p className="text-sm text-white/80 font-medium">{selectedPartner.meetingLocation}</p>
+                                  <p className="text-sm text-[var(--theme-text,#F0F6F7)]">{selectedPartner.meetingLocation}</p>
                                 )}
                              </div>
                           </div>
                        </DataCard>
-                       <DataCard title="INTERACTION TIMELINE" showEditToggle={false}>
-                          <div className="flex items-start gap-4 py-2">
-                             <Clock size={20} className="text-amber-400 shrink-0 mt-1" />
+                       <DataCard title="Timeline" showEditToggle={false}>
+                          <div className="flex items-start gap-3 py-2">
+                             <Clock size={18} className="text-[var(--theme-accent,#919FA5)] shrink-0 mt-0.5" />
                              <div>
-                                <div className="text-[10px] text-white/20 uppercase tracking-widest mb-1">Latest Pulse</div>
-                                <p className="text-sm text-white/80 font-medium">
+                                <div className="font-mono text-[10px] text-[var(--theme-text-subtle,#747474)] uppercase tracking-wide mb-1">Latest Pulse</div>
+                                <p className="text-sm text-[var(--theme-text,#F0F6F7)]">
                                    {selectedPartner.interactionLog[0] ? new Date(selectedPartner.interactionLog[0].timestamp).toLocaleDateString() : 'N/A'}
                                 </p>
                              </div>
@@ -938,16 +987,16 @@ const App: React.FC = () => {
                        </DataCard>
                     </div>
 
-                    <DataCard title="DATE CHECKLIST" isEditing={isEditing} onToggleEdit={() => setIsEditing(!isEditing)}>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-6 md:gap-x-10 py-2">
+                    <DataCard title="Date Checklist" isEditing={isEditing} onToggleEdit={() => setIsEditing(!isEditing)}>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-4 md:gap-x-6 py-2">
                           {selectedPartner.dateChecklist.map(item => (
-                             <div key={item.id} className="flex items-center gap-4 group text-left">
+                             <div key={item.id} className="flex items-center gap-3 group text-left">
                                 <button onClick={() => toggleChecklist(item.id)} className="shrink-0">
-                                  {item.isCompleted ? <CheckSquare size={18} className="text-[#00f2ff]" /> : <Square size={18} className="text-white/10 group-hover:text-white/30" />}
+                                  {item.isCompleted ? <CheckSquare size={16} className="text-[var(--theme-primary,#F0F6F7)]" /> : <Square size={16} className="text-[var(--theme-text-subtle,#747474)] group-hover:text-[var(--theme-text-muted,#919FA5)]" />}
                                 </button>
                                 {isEditing ? (
-                                  <input 
-                                    className="flex-1 bg-transparent border-b border-white/10 text-xs uppercase tracking-widest text-white/80 outline-none"
+                                  <input
+                                    className="flex-1 bg-transparent border-b border-[var(--theme-border,#2a2a2a)] font-mono text-xs text-[var(--theme-text,#F0F6F7)] outline-none focus:border-[var(--theme-border-hover,#3a3a3a)]"
                                     value={item.label}
                                     onChange={(e) => {
                                       const newChecklist = selectedPartner.dateChecklist.map(c => c.id === item.id ? { ...c, label: e.target.value } : c);
@@ -955,27 +1004,27 @@ const App: React.FC = () => {
                                     }}
                                   />
                                 ) : (
-                                  <span className={`text-xs uppercase tracking-widest ${item.isCompleted ? 'text-white/80' : 'text-white/30'}`}>{item.label}</span>
+                                  <span className={`font-mono text-xs ${item.isCompleted ? 'text-[var(--theme-text,#F0F6F7)]' : 'text-[var(--theme-text-subtle,#747474)]'}`}>{item.label}</span>
                                 )}
                                 {isEditing && (
                                   <button onClick={() => updatePartner({ dateChecklist: selectedPartner.dateChecklist.filter(c => c.id !== item.id) })}>
-                                    <Trash2 size={12} className="text-red-500/50 hover:text-red-500" />
+                                    <Trash2 size={12} className="text-red-400/50 hover:text-red-400" />
                                   </button>
                                 )}
                              </div>
                           ))}
                           {isEditing && (
-                            <button 
-                              className="col-span-2 flex items-center gap-2 text-[10px] text-cyan-400/50 hover:text-cyan-400 uppercase tracking-widest py-2 border-2 border-dashed border-white/5 rounded-xl justify-center mt-2"
-                              onClick={() => updatePartner({ dateChecklist: [...selectedPartner.dateChecklist, { id: Math.random().toString(), label: 'NEW TASK', isCompleted: false }] })}
+                            <button
+                              className="col-span-2 flex items-center gap-2 font-mono text-[10px] text-[var(--theme-text-subtle,#747474)] hover:text-[var(--theme-text-muted,#919FA5)] py-2 border border-dashed border-[var(--theme-border,#2a2a2a)] rounded justify-center mt-2 transition-colors"
+                              onClick={() => updatePartner({ dateChecklist: [...selectedPartner.dateChecklist, { id: Math.random().toString(), label: 'New Task', isCompleted: false }] })}
                             >
-                              <PlusCircle size={14} /> Add Checklist Item
+                              <PlusCircle size={12} /> Add Item
                             </button>
                           )}
                        </div>
                     </DataCard>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                        <PreferenceListEditor 
                         label="LOVES" 
                         items={selectedPartner.preferences.filter(p => p.isLove)}
@@ -997,17 +1046,17 @@ const App: React.FC = () => {
                 )}
 
                 {state.currentTab === 'history' && (
-                  <div className="space-y-4 animate-in fade-in slide-in-from-right-4">
+                  <div className="space-y-3">
                     {selectedPartner.interactionLog.map(l => (
-                      <div key={l.id} className="glass p-6 flex justify-between items-center border border-white/5 hover:bg-white/5 transition-colors">
-                        <div className="flex items-center gap-6">
-                          <div className={`w-2 h-2 rounded-full ${l.type === LogType.NEGATIVE ? 'bg-red-500 shadow-[0_0_10px_#ef4444]' : l.type === LogType.POSITIVE ? 'bg-green-500 shadow-[0_0_10px_#22c55e]' : 'bg-indigo-500 shadow-[0_0_10px_#7000ff]'}`}></div>
+                      <div key={l.id} className="glass p-4 flex justify-between items-center hover:bg-[var(--theme-bg-alt,#111111)] transition-colors">
+                        <div className="flex items-center gap-4">
+                          <div className={`w-1.5 h-1.5 rounded-full ${l.type === LogType.NEGATIVE ? 'bg-red-400' : l.type === LogType.POSITIVE ? 'bg-green-400' : 'bg-[var(--theme-text-subtle,#747474)]'}`}></div>
                           <div>
-                            <p className="text-sm font-medium text-white/90 leading-relaxed">{l.description}</p>
-                            <p className="text-[9px] text-white/20 uppercase mt-1 tracking-[0.2em]">{new Date(l.timestamp).toLocaleString()}</p>
+                            <p className="text-sm text-[var(--theme-text,#F0F6F7)] leading-relaxed">{l.description}</p>
+                            <p className="font-mono text-[9px] text-[var(--theme-text-subtle,#747474)] mt-1">{new Date(l.timestamp).toLocaleString()}</p>
                           </div>
                         </div>
-                        <div className="text-xs font-mono font-bold text-white/10">{l.compassionDelta > 0 ? '+' : ''}{l.compassionDelta} RESONANCE</div>
+                        <div className="font-mono text-xs text-[var(--theme-text-subtle,#747474)]">{l.compassionDelta > 0 ? '+' : ''}{l.compassionDelta}</div>
                       </div>
                     ))}
                   </div>
@@ -1015,42 +1064,42 @@ const App: React.FC = () => {
               </div>
             </div>
           ) : (
-            <div className="flex-1 flex flex-col items-center justify-center opacity-10">
-               <ShieldAlert size={80} className="text-[color:var(--theme-primary)]" />
-               <p className="mt-6 text-[10px] font-bold tracking-[0.5em] uppercase text-white/40">Searching Database...</p>
+            <div className="flex-1 flex flex-col items-center justify-center">
+               <ShieldAlert size={48} className="text-[var(--theme-text-subtle,#747474)]" />
+               <p className="mt-4 font-mono text-[10px] uppercase tracking-wide text-[var(--theme-text-subtle,#747474)]">Searching Database...</p>
             </div>
           )}
         </main>
       </div>
 
       {/* Modal - Emotional Lab */}
-      <Modal isOpen={isEmotionalUpdateOpen} onClose={() => setIsEmotionalUpdateOpen(false)} title="Cupid's Analytical Lab">
-        <div className="h-[500px] flex flex-col">
-          <div className="flex-1 overflow-y-auto space-y-4 pr-2 custom-scrollbar">
+      <Modal isOpen={isEmotionalUpdateOpen} onClose={() => setIsEmotionalUpdateOpen(false)} title="Emotional Update">
+        <div className="h-[400px] flex flex-col">
+          <div className="flex-1 overflow-y-auto space-y-3 pr-2 custom-scrollbar">
             {emotionalChat.map((msg, i) => (
               <div key={i} className={`flex ${msg.role === 'Cupid' ? 'justify-start' : 'justify-end'}`}>
-                <div className={`max-w-[85%] p-4 rounded-3xl ${msg.role === 'Cupid' ? 'chat-bubble-cupid shadow-indigo-900/10' : 'chat-bubble-user shadow-cyan-900/10'} shadow-lg`}>
-                  <p className="text-sm text-white/90 whitespace-pre-wrap leading-relaxed">{msg.text}</p>
+                <div className={`max-w-[85%] p-3 ${msg.role === 'Cupid' ? 'chat-bubble-cupid' : 'chat-bubble-user'}`}>
+                  <p className="text-sm text-[var(--theme-text,#F0F6F7)] whitespace-pre-wrap leading-relaxed">{msg.text}</p>
                   {i === emotionalChat.length - 1 && verdict && (
-                    <div className="mt-5 flex gap-3 animate-in zoom-in duration-300">
-                      <button onClick={() => applyVerdict(true)} className="flex-1 bg-green-500/10 hover:bg-green-500/20 text-green-400 py-3 rounded-2xl text-xs font-bold flex items-center justify-center gap-2 border border-green-500/20 transition-all">
-                        <ThumbsUp size={16} /> CONFIRM
+                    <div className="mt-4 flex gap-2">
+                      <button onClick={() => applyVerdict(true)} className="flex-1 bg-transparent hover:bg-green-950/30 text-green-400 py-2 rounded font-mono text-xs flex items-center justify-center gap-2 border border-green-900/50 hover:border-green-700 transition-colors">
+                        <ThumbsUp size={14} /> Confirm
                       </button>
-                      <button onClick={() => applyVerdict(false)} className="flex-1 bg-red-500/10 hover:bg-red-500/20 text-red-400 py-3 rounded-2xl text-xs font-bold flex items-center justify-center gap-2 border border-red-500/20 transition-all">
-                        <ThumbsDown size={16} /> REJECT
+                      <button onClick={() => applyVerdict(false)} className="flex-1 bg-transparent hover:bg-red-950/30 text-red-400 py-2 rounded font-mono text-xs flex items-center justify-center gap-2 border border-red-900/50 hover:border-red-700 transition-colors">
+                        <ThumbsDown size={14} /> Reject
                       </button>
                     </div>
                   )}
                 </div>
               </div>
             ))}
-            {isProcessing && <div className="chat-bubble-cupid p-3 w-14 animate-pulse" />}
+            {isProcessing && <div className="chat-bubble-cupid p-3 w-12"><div className="w-2 h-2 rounded-full bg-[var(--theme-text-subtle,#747474)] animate-pulse" /></div>}
             <div ref={emotionalBottomRef} />
           </div>
           {!verdict && (
-            <div className="mt-6 flex gap-3">
-              <input className="flex-1 glass bg-white/5 rounded-2xl px-5 text-sm text-white outline-none border border-white/5 h-12" value={userInput} onChange={e => setUserInput(e.target.value)} onKeyPress={e => e.key === 'Enter' && handleEmotionalUpdateChat()} placeholder="Spill it to Cupid..." />
-              <button onClick={handleEmotionalUpdateChat} className="bg-[#7000ff] text-white w-12 h-12 flex items-center justify-center rounded-2xl hover:bg-[#8521ff] transition-all shadow-lg"><Send size={20} /></button>
+            <div className="mt-4 flex gap-2">
+              <input className="flex-1 bg-[var(--theme-surface,#141414)] rounded px-3 text-sm text-[var(--theme-text,#F0F6F7)] outline-none border border-[var(--theme-border,#2a2a2a)] focus:border-[var(--theme-border-hover,#3a3a3a)] h-10" value={userInput} onChange={e => setUserInput(e.target.value)} onKeyPress={e => e.key === 'Enter' && handleEmotionalUpdateChat()} placeholder="Share your thoughts..." />
+              <button onClick={handleEmotionalUpdateChat} className="bg-[var(--theme-surface,#141414)] text-[var(--theme-text,#F0F6F7)] w-10 h-10 flex items-center justify-center rounded border border-[var(--theme-border,#2a2a2a)] hover:border-[var(--theme-border-hover,#3a3a3a)] transition-colors"><Send size={16} /></button>
             </div>
           )}
         </div>
@@ -1071,6 +1120,8 @@ const App: React.FC = () => {
         onClose={() => setShowSettings(false)}
         currentTheme={currentThemeId}
         onThemeChange={handleThemeChange}
+        currentMode={themeMode}
+        onModeChange={handleThemeModeChange}
       />
     </div>
   );
@@ -1081,18 +1132,18 @@ const App: React.FC = () => {
 const TraitList: React.FC<{ label: string, traits: Trait[], isEditing: boolean, onUpdate: (newTraits: Trait[]) => void, isPrimary: boolean }> = ({ label, traits, isEditing, onUpdate, isPrimary }) => {
   const [newVal, setNewVal] = useState('');
   return (
-    <div className="space-y-1">
-      <div className="text-[9px] font-bold text-white/20 uppercase tracking-widest flex justify-between items-center">
+    <div className="space-y-2">
+      <div className="font-mono text-[9px] text-[var(--theme-text-subtle,#747474)] uppercase tracking-wide flex justify-between items-center">
         {label}
         {isEditing && (
           <div className="flex gap-1">
-            <input 
-              className="bg-white/5 border border-white/10 rounded px-2 py-0.5 text-[8px] text-white w-20"
+            <input
+              className="bg-[var(--theme-bg-alt,#111111)] border border-[var(--theme-border,#2a2a2a)] rounded px-2 py-0.5 text-[8px] text-[var(--theme-text,#F0F6F7)] w-20 outline-none"
               value={newVal}
               onChange={(e) => setNewVal(e.target.value)}
-              placeholder="Add trait..."
+              placeholder="Add..."
             />
-            <button 
+            <button
               onClick={() => {
                 if (newVal.trim()) {
                   onUpdate([...traits, { id: Math.random().toString(), partnerId: '', name: newVal.trim(), isPrimary }]);
@@ -1100,17 +1151,17 @@ const TraitList: React.FC<{ label: string, traits: Trait[], isEditing: boolean, 
                 }
               }}
             >
-              <PlusCircle size={10} className="text-[color:var(--theme-accent)]" />
+              <PlusCircle size={10} className="text-[var(--theme-accent,#919FA5)]" />
             </button>
           </div>
         )}
       </div>
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-1.5">
         {traits.map(t => (
           <div key={t.id} className="relative group">
             <TagPill variant={isPrimary ? 'cyan' : 'pink'}>{t.name}</TagPill>
             {isEditing && (
-              <button 
+              <button
                 onClick={() => onUpdate(traits.filter(x => x.id !== t.id))}
                 className="absolute -top-1 -right-1 bg-red-500 rounded-full w-3 h-3 flex items-center justify-center scale-0 group-hover:scale-100 transition-transform"
               >
@@ -1127,18 +1178,18 @@ const TraitList: React.FC<{ label: string, traits: Trait[], isEditing: boolean, 
 const StringListEditor: React.FC<{ label: string, items: string[], isEditing: boolean, color: string, icon: React.ReactNode, onUpdate: (newList: string[]) => void, variant?: 'cyan' | 'pink' }> = ({ label, items, isEditing, color, icon, onUpdate, variant }) => {
   const [newVal, setNewVal] = useState('');
   return (
-    <div className="space-y-3">
-      <div className={`text-[10px] font-bold ${color} flex items-center justify-between gap-2`}>
+    <div className="space-y-2">
+      <div className={`font-mono text-[10px] ${color} flex items-center justify-between gap-2`}>
         <div className="flex items-center gap-2">{icon} {label}</div>
         {isEditing && (
           <div className="flex gap-1">
-            <input 
-              className="bg-white/5 border border-white/10 rounded px-2 py-0.5 text-[8px] text-white w-24"
+            <input
+              className="bg-[var(--theme-bg-alt,#111111)] border border-[var(--theme-border,#2a2a2a)] rounded px-2 py-0.5 text-[8px] text-[var(--theme-text,#F0F6F7)] w-24 outline-none"
               value={newVal}
               onChange={(e) => setNewVal(e.target.value)}
-              placeholder="Add item..."
+              placeholder="Add..."
             />
-            <button 
+            <button
               onClick={() => {
                 if (newVal.trim()) {
                   onUpdate([...items, newVal.trim()]);
@@ -1151,12 +1202,12 @@ const StringListEditor: React.FC<{ label: string, items: string[], isEditing: bo
           </div>
         )}
       </div>
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-1.5">
         {items.map((e, i) => (
           <div key={i} className="relative group">
             <TagPill variant={variant}>{e}</TagPill>
             {isEditing && (
-              <button 
+              <button
                 onClick={() => onUpdate(items.filter((_, idx) => idx !== i))}
                 className="absolute -top-1 -right-1 bg-red-500 rounded-full w-3 h-3 flex items-center justify-center scale-0 group-hover:scale-100 transition-transform"
               >
@@ -1174,46 +1225,46 @@ const PreferenceListEditor: React.FC<{ label: string, items: Preference[], isEdi
   const [newVal, setNewVal] = useState('');
   return (
     <DataCard title={label} isEditing={isEditing} onToggleEdit={onToggleEdit}>
-      <div className="space-y-3">
+      <div className="space-y-2">
         {items.map(p => (
-          <div key={p.id} className={`flex items-center justify-between gap-3 p-2.5 rounded-xl border ${isLove ? 'bg-green-500/5 border-green-500/10' : 'bg-red-500/5 border-red-500/10'}`}>
-            <div className="flex items-center gap-3">
-              <div className={`w-1.5 h-1.5 rounded-full ${isLove ? 'bg-green-500' : 'bg-red-500'}`} />
+          <div key={p.id} className={`flex items-center justify-between gap-2 p-2 rounded border ${isLove ? 'bg-green-950/20 border-green-900/30' : 'bg-red-950/20 border-red-900/30'}`}>
+            <div className="flex items-center gap-2">
+              <div className={`w-1.5 h-1.5 rounded-full ${isLove ? 'bg-green-400' : 'bg-red-400'}`} />
               {isEditing ? (
-                <input 
-                  className="bg-transparent text-[11px] text-white/70 uppercase tracking-widest outline-none border-b border-white/5"
+                <input
+                  className="bg-transparent font-mono text-xs text-[var(--theme-text-muted,#919FA5)] outline-none border-b border-[var(--theme-border,#2a2a2a)]"
                   value={p.label}
                   onChange={(e) => onUpdate(items.map(x => x.id === p.id ? { ...x, label: e.target.value } : x))}
                 />
               ) : (
-                <span className="text-[11px] text-white/70 uppercase tracking-widest">{p.label}</span>
+                <span className="font-mono text-xs text-[var(--theme-text-muted,#919FA5)]">{p.label}</span>
               )}
             </div>
             {isEditing && (
               <button onClick={() => onUpdate(items.filter(x => x.id !== p.id))}>
-                <Trash2 size={12} className="text-red-500/50 hover:text-red-500" />
+                <Trash2 size={12} className="text-red-400/50 hover:text-red-400" />
               </button>
             )}
           </div>
         ))}
         {isEditing && (
-          <div className="flex gap-2 mt-4">
-            <input 
-              className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-[10px] text-white outline-none"
+          <div className="flex gap-2 mt-3">
+            <input
+              className="flex-1 bg-[var(--theme-bg-alt,#111111)] border border-[var(--theme-border,#2a2a2a)] rounded px-2 py-1.5 font-mono text-xs text-[var(--theme-text,#F0F6F7)] outline-none"
               value={newVal}
               onChange={(e) => setNewVal(e.target.value)}
-              placeholder="Add preference..."
+              placeholder="Add..."
             />
-            <button 
+            <button
               onClick={() => {
                 if (newVal.trim()) {
                   onUpdate([...items, { id: Math.random().toString(), partnerId: '', label: newVal.trim(), isLove }]);
                   setNewVal('');
                 }
               }}
-              className="bg-white/5 p-2 rounded-lg text-white/40 hover:text-white"
+              className="bg-[var(--theme-surface,#141414)] p-1.5 rounded border border-[var(--theme-border,#2a2a2a)] text-[var(--theme-text-subtle,#747474)] hover:text-[var(--theme-text,#F0F6F7)] hover:border-[var(--theme-border-hover,#3a3a3a)] transition-colors"
             >
-              <Plus size={16} />
+              <Plus size={14} />
             </button>
           </div>
         )}
@@ -1224,28 +1275,27 @@ const PreferenceListEditor: React.FC<{ label: string, items: Preference[], isEdi
 
 // --- Generic Components ---
 
-const NavIcon: React.FC<{ icon: React.ReactNode, active?: boolean, onClick: () => void, label: string, color?: string }> = ({ icon, active, onClick, label, color = "text-white" }) => (
-  <button onClick={onClick} className={`flex flex-col items-center gap-2 md:gap-3 group transition-all duration-300 ${active ? 'scale-110' : 'opacity-70 hover:opacity-100 hover:scale-105'}`}>
-    <div className={`p-3 md:p-4 rounded-2xl transition-all duration-500 ${active ? 'bg-white/10 border border-white/10 shadow-[0_0_20px_rgba(255,255,255,0.05)] text-[color:var(--theme-primary)]' : color}`}>{icon}</div>
-    <span className={`hidden md:block text-[8px] font-bold tracking-[0.3em] uppercase transition-colors ${active ? 'text-white' : 'text-white/75'}`}>{label}</span>
+const NavIcon: React.FC<{ icon: React.ReactNode, active?: boolean, onClick: () => void, label: string, color?: string }> = ({ icon, active, onClick, label, color = "text-[var(--theme-text-muted,#919FA5)]" }) => (
+  <button onClick={onClick} className={`flex flex-col items-center gap-1.5 md:gap-2 group transition-colors duration-200 ${active ? '' : 'opacity-60 hover:opacity-100'}`}>
+    <div className={`p-2.5 md:p-3 rounded border transition-colors duration-200 ${active ? 'bg-[var(--theme-surface,#141414)] border-[var(--theme-border-hover,#3a3a3a)] text-[var(--theme-primary,#F0F6F7)]' : `border-transparent hover:border-[var(--theme-border,#2a2a2a)] ${color}`}`}>{icon}</div>
+    <span className={`hidden md:block font-mono text-[8px] uppercase tracking-wide transition-colors ${active ? 'text-[var(--theme-text,#F0F6F7)]' : 'text-[var(--theme-text-subtle,#747474)]'}`}>{label}</span>
   </button>
 );
 
 const DataCard: React.FC<{ title: string, children: React.ReactNode, className?: string, showEditToggle?: boolean, onToggleEdit?: () => void, isEditing?: boolean }> = ({ title, children, className = '', showEditToggle = true, onToggleEdit, isEditing }) => (
-  <div className={`glass p-6 md:p-8 border border-[color:var(--theme-border)] hover:border-[color:var(--theme-primary)] transition-all duration-500 group ${className}`}>
-    <h4 className="text-[10px] font-bold text-white/20 uppercase tracking-[0.3em] mb-6 md:mb-8 border-b border-white/5 pb-3 flex items-center justify-between gap-3">
+  <div className={`glass p-4 md:p-5 transition-colors duration-200 ${className}`}>
+    <h4 className="font-mono text-[10px] text-[var(--theme-text-subtle,#747474)] uppercase tracking-wide mb-4 md:mb-5 border-b-2 border-[var(--theme-border,#2a2a2a)] pb-2 flex items-center justify-between gap-2">
        <span>{title}</span>
-       <div className="flex items-center gap-2">
+       <div className="flex items-center gap-1.5">
          {showEditToggle && onToggleEdit && (
            <button
              onClick={onToggleEdit}
-             className={`p-1 rounded-full border transition-colors ${isEditing ? 'border-[color:var(--theme-primary)] text-[color:var(--theme-primary)]' : 'border-[color:var(--theme-border)] text-white/40 hover:text-white hover:border-[color:var(--theme-primary)]'}`}
+             className={`p-1 rounded border transition-colors ${isEditing ? 'border-[var(--theme-primary,#F0F6F7)] text-[var(--theme-primary,#F0F6F7)]' : 'border-[var(--theme-border,#2a2a2a)] text-[var(--theme-text-subtle,#747474)] hover:text-[var(--theme-text,#F0F6F7)] hover:border-[var(--theme-border-hover,#3a3a3a)]'}`}
              aria-label={isEditing ? "Save changes" : "Edit section"}
            >
-             {isEditing ? <Save size={12} /> : <Edit2 size={12} />}
+             {isEditing ? <Save size={10} /> : <Edit2 size={10} />}
            </button>
          )}
-         <Info size={12} className="opacity-0 group-hover:opacity-100 transition-opacity" />
        </div>
     </h4>
     {children}
