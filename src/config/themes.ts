@@ -24,24 +24,6 @@ export interface Theme {
 
 export const themes: Theme[] = [
   {
-    name: 'Monochrome',
-    id: 'mono',
-    colors: {
-      primary: '#F0F6F7',
-      primaryHover: '#FFFFFF',
-      accent: '#919FA5',
-      accentHover: '#F0F6F7',
-      bg: '#0a0a0a',
-      bgAlt: '#111111',
-      surface: '#141414',
-      text: '#F0F6F7',
-      textMuted: '#919FA5',
-      textSubtle: '#747474',
-      border: '#2a2a2a',
-      borderHover: '#3a3a3a',
-    },
-  },
-  {
     name: 'Slate',
     id: 'slate',
     colors: {

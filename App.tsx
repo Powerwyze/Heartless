@@ -177,13 +177,21 @@ const App: React.FC = () => {
   // Settings State
   const [showSettings, setShowSettings] = useState(false);
   const [currentThemeId, setCurrentThemeId] = useState(() => {
-    return localStorage.getItem('heartless_theme') || 'mono';
+    const storedTheme = localStorage.getItem('heartless_theme');
+    return storedTheme && storedTheme !== 'mono' ? storedTheme : 'ocean';
   });
   const [themeMode, setThemeMode] = useState<'light' | 'dark'>(() => {
     return (localStorage.getItem('heartless_mode') as 'light' | 'dark') || 'light';
   });
 
   const currentTheme = useMemo(() => getTheme(currentThemeId), [currentThemeId]);
+
+  useEffect(() => {
+    if (currentThemeId === 'mono') {
+      setCurrentThemeId('ocean');
+      localStorage.setItem('heartless_theme', 'ocean');
+    }
+  }, [currentThemeId]);
   const toRgba = (hex: string, alpha: number) => {
     const cleaned = hex.replace('#', '');
     const normalized = cleaned.length === 3
@@ -1277,7 +1285,15 @@ const PreferenceListEditor: React.FC<{ label: string, items: Preference[], isEdi
 
 const NavIcon: React.FC<{ icon: React.ReactNode, active?: boolean, onClick: () => void, label: string, color?: string }> = ({ icon, active, onClick, label, color = "text-[var(--theme-text-muted,#919FA5)]" }) => (
   <button onClick={onClick} className={`flex flex-col items-center gap-1.5 md:gap-2 group transition-colors duration-200 ${active ? '' : 'opacity-60 hover:opacity-100'}`}>
-    <div className={`p-2.5 md:p-3 rounded border transition-colors duration-200 ${active ? 'bg-[var(--theme-surface,#141414)] border-[var(--theme-border-hover,#3a3a3a)] text-[var(--theme-primary,#F0F6F7)]' : `border-transparent hover:border-[var(--theme-border,#2a2a2a)] ${color}`}`}>{icon}</div>
+    <div
+      className={`p-2.5 md:p-3 rounded border-2 transition-colors duration-200 ${
+        active
+          ? 'bg-[var(--theme-surface,#141414)] border-[var(--theme-border-hover,#3a3a3a)] text-[var(--theme-primary,#F0F6F7)]'
+          : `border-[var(--theme-border,#2a2a2a)] hover:border-[var(--theme-border-hover,#3a3a3a)] ${color}`
+      }`}
+    >
+      {icon}
+    </div>
     <span className={`hidden md:block font-mono text-[8px] uppercase tracking-wide transition-colors ${active ? 'text-[var(--theme-text,#F0F6F7)]' : 'text-[var(--theme-text-subtle,#747474)]'}`}>{label}</span>
   </button>
 );
