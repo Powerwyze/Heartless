@@ -3,6 +3,7 @@ import {
   signInWithEmailAndPassword,
   signOut as firebaseSignOut,
   onAuthStateChanged,
+  deleteUser,
   User,
 } from 'firebase/auth';
 import { auth } from '../src/config/firebase';
@@ -56,6 +57,19 @@ export const signOut = async (): Promise<void> => {
   } catch (error: any) {
     console.error('Error signing out:', error);
     throw new Error(error.message || 'Failed to sign out');
+  }
+};
+
+export const deleteAccount = async (): Promise<void> => {
+  try {
+    const user = auth.currentUser;
+    if (!user) {
+      throw new Error('No authenticated user');
+    }
+    await deleteUser(user);
+  } catch (error: any) {
+    console.error('Error deleting account:', error);
+    throw new Error(error.message || 'Failed to delete account');
   }
 };
 

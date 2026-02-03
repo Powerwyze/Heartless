@@ -129,6 +129,18 @@ export const deletePartner = async (partnerId: string): Promise<void> => {
   }
 };
 
+export const deleteUserData = async (userId: string): Promise<void> => {
+  try {
+    const q = query(collection(db, 'partners'), where('userId', '==', userId));
+    const querySnapshot = await getDocs(q);
+    await Promise.all(querySnapshot.docs.map(docSnap => deletePartner(docSnap.id)));
+    await deleteDoc(doc(db, 'users', userId));
+  } catch (error) {
+    console.error('Error deleting user data:', error);
+    throw new Error('Failed to delete user data');
+  }
+};
+
 // Traits Operations
 
 export const addTrait = async (partnerId: string, trait: Omit<Trait, 'id'>): Promise<string> => {

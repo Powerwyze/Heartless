@@ -5,8 +5,8 @@ import { INITIAL_PARTNERS } from './constants';
 import { PixelButton as ModernButton, CompassionMeter, StatBar, TagPill, RadarChart, Modal } from './components/RetroUI';
 import { PRDView } from './components/PRDView';
 import { HeartlessAIService } from './services/geminiService';
-import { onAuthStateChange, signOut as firebaseSignOut } from './services/authService';
-import { getPartners, createPartner, updatePartner as updatePartnerFirestore, addInteractionLog, updateChecklistItem as updateChecklistFirestore, addTrait, addPreference, deleteTrait, deletePreference } from './services/firestoreService';
+import { onAuthStateChange, signOut as firebaseSignOut, deleteAccount as deleteFirebaseAccount } from './services/authService';
+import { getPartners, createPartner, updatePartner as updatePartnerFirestore, addInteractionLog, updateChecklistItem as updateChecklistFirestore, addTrait, addPreference, deleteTrait, deletePreference, deletePartner, deleteUserData } from './services/firestoreService';
 import { AuthUI } from './components/AuthUI';
 import { Tutorial } from './components/Tutorial';
 import { Settings } from './components/Settings';
@@ -377,6 +377,33 @@ const App: React.FC = () => {
     }
   };
 
+  const handleRemovePartner = async () => {
+    if (!selectedPartner) return;
+    const confirmed = window.confirm(`Remove ${selectedPartner.name} from your database? This cannot be undone.`);
+    if (!confirmed) return;
+
+    const previousPartners = state.partners;
+    const removedId = selectedPartner.id;
+
+    setIsEditing(false);
+    setState(prev => {
+      const partners = prev.partners.filter(p => p.id !== removedId);
+      const nextSelectedId = prev.selectedPartnerId === removedId ? (partners[0]?.id ?? null) : prev.selectedPartnerId;
+      return { ...prev, partners, selectedPartnerId: nextSelectedId };
+    });
+
+    try {
+      await deletePartner(removedId);
+    } catch (error) {
+      console.error('Failed to delete partner:', error);
+      setState(prev => ({
+        ...prev,
+        partners: previousPartners,
+        selectedPartnerId: prev.selectedPartnerId ?? previousPartners[0]?.id ?? null,
+      }));
+    }
+  };
+
   const startOnboarding = () => {
     setIsOnboarding(true);
     setChatHistory([{ 
@@ -601,6 +628,23 @@ const App: React.FC = () => {
     localStorage.setItem('heartless_mode', mode);
   };
 
+  const handleDeleteAccount = async () => {
+    if (!authUser) return;
+    const confirmed = window.confirm('Delete your account and all data? This cannot be undone.');
+    if (!confirmed) return;
+    setShowSettings(false);
+
+    try {
+      await deleteUserData(authUser.uid);
+      await deleteFirebaseAccount();
+      setState(prev => ({ ...prev, partners: [], selectedPartnerId: null }));
+      setAuthUser(null);
+    } catch (error: any) {
+      console.error('Failed to delete account:', error);
+      alert(error?.message || 'Failed to delete account. Please sign in again and try.');
+    }
+  };
+
   // Show loading state while checking auth
   if (isAuthLoading) {
     return (
@@ -766,6 +810,12 @@ const App: React.FC = () => {
                       <div className={`text-lg font-semibold tracking-tight transition-colors ${isTerminated ? 'text-red-400 line-through' : 'text-[var(--theme-text,#F0F6F7)]'}`}>{selectedPartner.name}</div>
                     )}
                     <div className="flex justify-center"><CompassionMeter current={selectedPartner.currentCompassion} max={selectedPartner.totalCompassion} big /></div>
+                    <button
+                      onClick={handleRemovePartner}
+                      className="w-full mt-2 inline-flex items-center justify-center gap-2 rounded border border-red-900/50 text-red-400 text-[10px] font-mono uppercase tracking-wide py-2 transition-colors hover:border-red-700 hover:text-red-300 hover:bg-red-950/30"
+                    >
+                      <Trash2 size={12} /> Remove Partner
+                    </button>
                   </div>
                 </div>
                 
@@ -1130,6 +1180,7 @@ const App: React.FC = () => {
         onThemeChange={handleThemeChange}
         currentMode={themeMode}
         onModeChange={handleThemeModeChange}
+        onDeleteAccount={handleDeleteAccount}
       />
     </div>
   );

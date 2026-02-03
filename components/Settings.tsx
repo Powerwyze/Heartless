@@ -9,9 +9,10 @@ interface SettingsProps {
   onThemeChange: (themeId: string) => void;
   currentMode: 'light' | 'dark';
   onModeChange: (mode: 'light' | 'dark') => void;
+  onDeleteAccount: () => void;
 }
 
-export const Settings: React.FC<SettingsProps> = ({ isOpen, onClose, currentTheme, onThemeChange, currentMode, onModeChange }) => {
+export const Settings: React.FC<SettingsProps> = ({ isOpen, onClose, currentTheme, onThemeChange, currentMode, onModeChange, onDeleteAccount }) => {
   if (!isOpen) return null;
 
   return (
@@ -117,6 +118,24 @@ export const Settings: React.FC<SettingsProps> = ({ isOpen, onClose, currentThem
             <p className="text-[11px] text-[var(--theme-text-subtle,#747474)] leading-relaxed">
               Your theme preference is saved locally and will persist across sessions.
             </p>
+          </div>
+
+          {/* Account */}
+          <div className="mt-4">
+            <h3 className="font-mono text-[10px] text-[var(--theme-text-subtle,#747474)] uppercase tracking-wide mb-2">
+              Account
+            </h3>
+            <div className="p-3 bg-[var(--theme-bg-alt,#111111)] rounded border-2 border-red-900/50">
+              <p className="text-[11px] text-[var(--theme-text-muted,#919FA5)] leading-relaxed">
+                This will permanently remove your account and all partner data.
+              </p>
+              <button
+                onClick={onDeleteAccount}
+                className="mt-3 w-full px-4 py-2 rounded border border-red-900/50 text-red-400 text-[10px] font-mono uppercase tracking-wide transition-colors hover:border-red-700 hover:text-red-300 hover:bg-red-950/30"
+              >
+                Delete Account
+              </button>
+            </div>
           </div>
         </div>
 
