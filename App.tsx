@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import { Heart, Plus, Power, MessageSquare, Camera, User, History, Activity, ShieldAlert, BookOpen, Settings as SettingsIcon, Image as ImageIcon, CheckCircle2, ArrowRight, X, ThumbsUp, ThumbsDown, Sparkles, AlertCircle, Send, Zap, Shield, Target, Award, Brain, Star, MapPin, CheckSquare, Square, Clock, TrendingUp, Info, Save, Edit2, Trash2, PlusCircle } from 'lucide-react';
+import { Heart, Plus, Power, MessageSquare, Camera, User, History, Activity, ShieldAlert, BookOpen, Settings as SettingsIcon, Image as ImageIcon, CheckCircle2, ArrowRight, X, ThumbsUp, ThumbsDown, Sparkles, AlertCircle, Send, Zap, Shield, Target, Award, Brain, Star, MapPin, CheckSquare, Square, Clock, TrendingUp, Info, Save, Edit2, Trash2, PlusCircle, Archive } from 'lucide-react';
 import { Partner, RelationshipType, InteractionLog, AppState, LogType, Trait, Preference, AuthUser } from './types';
 import { INITIAL_PARTNERS } from './constants';
 import { PixelButton as ModernButton, CompassionMeter, StatBar, TagPill, RadarChart, Modal } from './components/RetroUI';
@@ -263,6 +263,7 @@ const App: React.FC = () => {
   const [isTarotLoading, setIsTarotLoading] = useState(false);
   const [tarotDealCount, setTarotDealCount] = useState(0);
   const [isTarotDealing, setIsTarotDealing] = useState(false);
+  const [onboardingGroup, setOnboardingGroup] = useState<'family' | 'friend' | 'romantic' | null>(null);
 
   // Emotional Update State
   const [isEmotionalUpdateOpen, setIsEmotionalUpdateOpen] = useState(false);
@@ -481,6 +482,27 @@ const App: React.FC = () => {
     updatePartner({ compatibility: { ...compatibility, ...updates } });
   };
 
+  const getRelationshipGroup = (relationshipType: RelationshipType) => {
+    const family = new Set([
+      RelationshipType.MOTHER,
+      RelationshipType.FATHER,
+      RelationshipType.SIBLING,
+      RelationshipType.COUSIN,
+      RelationshipType.AUNT_UNCLE,
+      RelationshipType.GRANDPARENT,
+      RelationshipType.CHILD,
+    ]);
+    const friends = new Set([
+      RelationshipType.FRIEND,
+      RelationshipType.BEST_FRIEND,
+      RelationshipType.COWORKER,
+    ]);
+
+    if (family.has(relationshipType)) return 'family';
+    if (friends.has(relationshipType)) return 'friend';
+    return 'romantic';
+  };
+
   const createTarotDeck = () => {
     const shuffled = [...TAROT_CARDS].sort(() => Math.random() - 0.5);
     return shuffled.slice(0, 10);
@@ -678,13 +700,14 @@ const App: React.FC = () => {
       role: 'Cupid', 
       text: "Welcome to the Lab, darling! I sense a new connection in the air. To get started, I'll need a visual signature. Upload a photo of your interest and I'll work my magic to manifest their spirit in our system!" 
     }]);
-    setOnboardingStep(1);
+    setOnboardingStep(0);
     setUploadedImage(null);
+    setOnboardingGroup(null);
   };
 
   const handleOnboardingChat = async () => {
-    if (onboardingStep === 1 && !uploadedImage) return; 
-    if (!userInput.trim() && isProcessing) return;
+    if (onboardingStep === 0 && !uploadedImage) return;
+    if (!userInput.trim() || isProcessing) return;
 
     const currentInput = userInput;
     const newHistory = [...chatHistory, { role: 'User', text: currentInput } as const];
@@ -692,23 +715,64 @@ const App: React.FC = () => {
     setUserInput('');
     setIsProcessing(true);
 
-    const questions = [
-      "",
-      "Signature captured. Now, what do they call this entity? (Name)",
-      "Where did your orbits first cross? App, work, a fever dream? (Location)",
-      "What is their defining trait? Tell me their essence. (Personality)",
-      "Warning: Every rose has thorns. What's the one thing that makes you go 'yikes'? (Red Flags)",
-      "Compiling data. Calculating compatibility... manifesting!"
-    ];
+    const questionSets = {
+      romantic: [
+        "What's their name?",
+        "Where did your orbits first cross? App, work, a fever dream?",
+        "What is their defining trait? Tell me their essence.",
+        "Warning: Every rose has thorns. What's the one thing that makes you go 'yikes'?",
+      ],
+      friend: [
+        "What's their name?",
+        "How do you know each other?",
+        "What's their defining trait as a friend?",
+        "What do they do that you love most?",
+        "What's the biggest friction point between you two?",
+      ],
+      family: [
+        "What's their name?",
+        "What's your relation (mom, dad, sibling, cousin, etc.)?",
+        "What role do they play in your life?",
+        "What's your strongest memory with them?",
+        "What's the biggest tension or boundary right now?",
+      ],
+    } as const;
 
-    if (onboardingStep < questions.length - 1) {
+    if (onboardingStep === 1) {
+      const normalized = currentInput.toLowerCase();
+      const group = normalized.includes('family')
+        ? 'family'
+        : normalized.includes('friend')
+        ? 'friend'
+        : (normalized.includes('romantic') || normalized.includes('partner'))
+        ? 'romantic'
+        : null;
+      if (!group) {
+        setChatHistory(prev => [...prev, { role: 'Cupid', text: "Pick one: family, friend, or romantic partner." }]);
+        setIsProcessing(false);
+        return;
+      }
+      setOnboardingGroup(group);
       setTimeout(() => {
-        setChatHistory(prev => [...prev, { role: 'Cupid', text: questions[onboardingStep] }]);
+        setChatHistory(prev => [...prev, { role: 'Cupid', text: questionSets[group][0] }]);
+        setOnboardingStep(2);
+        setIsProcessing(false);
+      }, 600);
+      return;
+    }
+
+    const groupKey = onboardingGroup || 'romantic';
+    const currentQuestions = questionSets[groupKey];
+    const questionIndex = onboardingStep - 2;
+
+    if (questionIndex < currentQuestions.length - 1) {
+      setTimeout(() => {
+        setChatHistory(prev => [...prev, { role: 'Cupid', text: currentQuestions[questionIndex + 1] }]);
         setOnboardingStep(prev => prev + 1);
         setIsProcessing(false);
       }, 1000);
     } else {
-      const profile = await ai.synthesizeProfile(newHistory);
+        const profile = await ai.synthesizeProfile(newHistory, groupKey);
       if (profile && authUser) {
         // Generate partner ID first so we can use it for sprite upload
         const partnerId = Math.random().toString(36).substr(2, 9);
@@ -788,12 +852,15 @@ const App: React.FC = () => {
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setUploadedImage(reader.result as string);
-        setChatHistory(prev => [...prev, { role: 'Cupid', text: "Visual ID verified. Background Purged. What is their name?" }]);
-        setOnboardingStep(2);
-      };
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setUploadedImage(reader.result as string);
+      setChatHistory(prev => [
+        ...prev,
+        { role: 'Cupid', text: "Visual ID verified. Who is this person you're adding: family, friend, or romantic partner?" }
+      ]);
+      setOnboardingStep(1);
+    };
       reader.readAsDataURL(file);
     }
   };
@@ -991,6 +1058,7 @@ const App: React.FC = () => {
           <NavIcon icon={<User size={18}/>} active={state.currentTab === 'dex'} onClick={() => setState(s => ({...s, currentTab: 'dex'}))} label="DEX" />
           <NavIcon icon={<Activity size={18}/>} active={state.currentTab === 'stats'} onClick={() => setState(s => ({...s, currentTab: 'stats'}))} label="STATS" />
           <NavIcon icon={<Sparkles size={18}/>} active={state.currentTab === 'compat'} onClick={() => setState(s => ({...s, currentTab: 'compat'}))} label="MATCH" />
+          <NavIcon icon={<Archive size={18}/>} active={state.currentTab === 'storage'} onClick={() => setState(s => ({...s, currentTab: 'storage'}))} label="STORAGE" />
           <NavIcon icon={<BookOpen size={18}/>} active={state.currentTab === 'lore'} onClick={() => setState(s => ({...s, currentTab: 'lore'}))} label="INTEL" />
           <NavIcon icon={<History size={18}/>} active={state.currentTab === 'history'} onClick={() => setState(s => ({...s, currentTab: 'history'}))} label="LOGS" />
         </div>
@@ -1057,8 +1125,8 @@ const App: React.FC = () => {
                     {uploadedImage ? <CheckCircle2 size={20} /> : <Camera size={20} />}
                   </button>
                 )}
-                <input className="flex-1 bg-transparent px-3 text-[var(--theme-text,#F0F6F7)] outline-none placeholder:text-[var(--theme-text-subtle,#747474)] text-sm" value={userInput} onChange={e => setUserInput(e.target.value)} onKeyPress={e => e.key === 'Enter' && handleOnboardingChat()} placeholder={onboardingStep === 1 ? "Upload evidence first..." : "Enter response..."} disabled={onboardingStep === 1 && !uploadedImage} />
-                <button onClick={handleOnboardingChat} disabled={onboardingStep === 1 && !uploadedImage} className="bg-[var(--theme-surface,#141414)] hover:bg-[var(--theme-bg-alt,#111111)] text-[var(--theme-text,#F0F6F7)] p-2.5 rounded border border-[var(--theme-border,#2a2a2a)] hover:border-[var(--theme-border-hover,#3a3a3a)] transition-colors disabled:opacity-30"><ArrowRight size={20} /></button>
+                <input className="flex-1 bg-transparent px-3 text-[var(--theme-text,#F0F6F7)] outline-none placeholder:text-[var(--theme-text-subtle,#747474)] text-sm" value={userInput} onChange={e => setUserInput(e.target.value)} onKeyPress={e => e.key === 'Enter' && handleOnboardingChat()} placeholder={onboardingStep === 0 ? "Upload evidence first..." : "Enter response..."} disabled={onboardingStep === 0 && !uploadedImage} />
+                <button onClick={handleOnboardingChat} disabled={onboardingStep === 0 && !uploadedImage} className="bg-[var(--theme-surface,#141414)] hover:bg-[var(--theme-bg-alt,#111111)] text-[var(--theme-text,#F0F6F7)] p-2.5 rounded border border-[var(--theme-border,#2a2a2a)] hover:border-[var(--theme-border-hover,#3a3a3a)] transition-colors disabled:opacity-30"><ArrowRight size={20} /></button>
               </div>
               <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageUpload} />
             </div>
@@ -1504,6 +1572,39 @@ const App: React.FC = () => {
                         </div>
                       )}
                     </DataCard>
+                  </div>
+                )}
+
+                {state.currentTab === 'storage' && (
+                  <div className="space-y-6">
+                    {['family', 'friend', 'romantic'].map((group) => {
+                      const groupLabel = group === 'family' ? 'Family Storage' : group === 'friend' ? 'Friend Storage' : 'Romantic Storage';
+                      const groupPartners = state.partners.filter(p => getRelationshipGroup(p.relationshipType) === group);
+                      return (
+                        <DataCard key={group} title={groupLabel} showEditToggle={false}>
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="text-xs font-mono uppercase tracking-wide text-[var(--theme-text-subtle,#747474)]">
+                              {groupPartners.length} in Dex
+                            </div>
+                            <div className="text-[10px] font-mono uppercase tracking-wide text-[var(--theme-text-subtle,#747474)]">
+                              Group is determined by relationship level
+                            </div>
+                          </div>
+                          {groupPartners.length === 0 ? (
+                            <div className="text-sm text-[var(--theme-text-muted,#919FA5)]">No entries yet.</div>
+                          ) : (
+                            <div className="space-y-2">
+                              {groupPartners.map(p => (
+                                <div key={p.id} className="flex items-center justify-between rounded border border-[var(--theme-border,#2a2a2a)] bg-[var(--theme-bg-alt,#111111)] px-3 py-2">
+                                  <div className="text-sm text-[var(--theme-text,#F0F6F7)]">{p.name}</div>
+                                  <div className="text-[10px] font-mono uppercase tracking-wide text-[var(--theme-text-subtle,#747474)]">{p.relationshipType}</div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </DataCard>
+                      );
+                    })}
                   </div>
                 )}
 

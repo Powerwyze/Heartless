@@ -68,8 +68,15 @@ export class HeartlessAIService {
     }
   }
 
-  async synthesizeProfile(convo: { role: string, text: string }[]): Promise<any> {
-    const prompt = `You are Cupid, the Supreme Romantic Analyst. You've interviewed a user about their romantic interest.
+  async synthesizeProfile(convo: { role: string, text: string }[], group: 'family' | 'friend' | 'romantic'): Promise<any> {
+    const relationshipTypeOptions = {
+      family: 'MOTHER, FATHER, SIBLING, COUSIN, AUNT/UNCLE, GRANDPARENT, CHILD',
+      friend: 'FRIEND, BEST FRIEND, CO-WORKER',
+      romantic: 'WIFEY MATERIAL, HUBBY MATERIAL, GF MATERIAL, BF MATERIAL, GIRLFRIEND, BOYFRIEND, DATING, TALKING STAGE, SITUATIONSHIP, FRIENDS WITH BENEFITS, CRUSH, SUGAR BABY, SUGAR DADDY, SUGAR MOMMA, LIFE PARTNER, EX',
+    }[group];
+
+    const prompt = `You are Cupid, the Supreme Relationship Analyst. You've interviewed a user about someone in their life.
+    The person is a ${group} relationship.
     Translate their messy human feelings into a structured "Partner Dex" profile.
     
     Conversation:
@@ -87,7 +94,7 @@ export class HeartlessAIService {
     9. likes: string[] (3 things they love)
     10. dislikes: string[] (3 dealbreakers)
     11. meetingLocation: string
-    12. relationshipType: string (Choose from: WIFEY/HUBBY MATERIAL, GF/BF MATERIAL, CRUSH, FLING, FRIENDS WITH BENEFITS, SITUATIONSHIP, EMOTIONAL SUPPORT HUMAN)`;
+    12. relationshipType: string (Choose from: ${relationshipTypeOptions})`;
 
     try {
       const response = await this.ai.models.generateContent({
