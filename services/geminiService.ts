@@ -201,4 +201,38 @@ export class HeartlessAIService {
       return { delta: 0, reason: "My crystal ball is foggy, let's keep things as they are." };
     }
   }
+
+  async getHoroscopeCompatibility(userSign: string, partnerSign: string): Promise<string> {
+    const systemInstruction = `You are Cupid, the Heartless Guide. Keep it playful, short, and practical.
+    Keep responses to 2 short sentences max. No claims of certainty.`;
+    const prompt = `Give a quick compatibility fortune for ${userSign} and ${partnerSign} today.`;
+    try {
+      const response = await this.ai.models.generateContent({
+        model: 'gemini-3-flash-preview',
+        contents: prompt,
+        config: { systemInstruction }
+      });
+      return response.text || "The stars are coy today. Try again later.";
+    } catch {
+      return "The stars are coy today. Try again later.";
+    }
+  }
+
+  async getTarotReading(question: string, cards: string[]): Promise<string> {
+    const systemInstruction = `You are Cupid, the Heartless Guide. Short, poetic, and practical.
+    Keep it to 3 short sentences max.`;
+    const prompt = `Question: "${question}"
+Cards: ${cards.join(', ')}
+Give a concise tarot reading based on the cards and the question.`;
+    try {
+      const response = await this.ai.models.generateContent({
+        model: 'gemini-3-flash-preview',
+        contents: prompt,
+        config: { systemInstruction }
+      });
+      return response.text || "The cards whisper softly, but the message is still yours to choose.";
+    } catch {
+      return "The cards whisper softly, but the message is still yours to choose.";
+    }
+  }
 }

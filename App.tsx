@@ -153,6 +153,100 @@ const shuffleQuotes = (quotes: string[]) => {
 };
 
 const App: React.FC = () => {
+  const TAROT_CARDS = [
+    'The Fool',
+    'The Magician',
+    'The High Priestess',
+    'The Empress',
+    'The Emperor',
+    'The Hierophant',
+    'The Lovers',
+    'The Chariot',
+    'Strength',
+    'The Hermit',
+    'Wheel of Fortune',
+    'Justice',
+    'The Hanged Man',
+    'Death',
+    'Temperance',
+    'The Devil',
+    'The Tower',
+    'The Star',
+    'The Moon',
+    'The Sun',
+    'Judgement',
+    'The World',
+    'Ace of Wands',
+    'Two of Wands',
+    'Three of Wands',
+    'Four of Wands',
+    'Five of Wands',
+    'Six of Wands',
+    'Seven of Wands',
+    'Eight of Wands',
+    'Nine of Wands',
+    'Ten of Wands',
+    'Page of Wands',
+    'Knight of Wands',
+    'Queen of Wands',
+    'King of Wands',
+    'Ace of Cups',
+    'Two of Cups',
+    'Three of Cups',
+    'Four of Cups',
+    'Five of Cups',
+    'Six of Cups',
+    'Seven of Cups',
+    'Eight of Cups',
+    'Nine of Cups',
+    'Ten of Cups',
+    'Page of Cups',
+    'Knight of Cups',
+    'Queen of Cups',
+    'King of Cups',
+    'Ace of Swords',
+    'Two of Swords',
+    'Three of Swords',
+    'Four of Swords',
+    'Five of Swords',
+    'Six of Swords',
+    'Seven of Swords',
+    'Eight of Swords',
+    'Nine of Swords',
+    'Ten of Swords',
+    'Page of Swords',
+    'Knight of Swords',
+    'Queen of Swords',
+    'King of Swords',
+    'Ace of Pentacles',
+    'Two of Pentacles',
+    'Three of Pentacles',
+    'Four of Pentacles',
+    'Five of Pentacles',
+    'Six of Pentacles',
+    'Seven of Pentacles',
+    'Eight of Pentacles',
+    'Nine of Pentacles',
+    'Ten of Pentacles',
+    'Page of Pentacles',
+    'Knight of Pentacles',
+    'Queen of Pentacles',
+    'King of Pentacles',
+  ];
+  const defaultCompatibility = {
+    tarotQuestion: '',
+    tarotDeck: [],
+    tarotSelected: [],
+    tarotReading: '',
+    partnerSign: '',
+    userSign: '',
+    horoscopeFortune: '',
+    horoscopeDateKey: '',
+    libidoRating: 5,
+    wingPreference: '',
+    introExtro: '',
+    faith: '',
+  };
   // Authentication state
   const [authUser, setAuthUser] = useState<AuthUser | null>(null);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
@@ -165,6 +259,10 @@ const App: React.FC = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [isHoroscopeLoading, setIsHoroscopeLoading] = useState(false);
+  const [isTarotLoading, setIsTarotLoading] = useState(false);
+  const [tarotDealCount, setTarotDealCount] = useState(0);
+  const [isTarotDealing, setIsTarotDealing] = useState(false);
 
   // Emotional Update State
   const [isEmotionalUpdateOpen, setIsEmotionalUpdateOpen] = useState(false);
@@ -284,6 +382,7 @@ const App: React.FC = () => {
 
   const selectedPartner = state.partners.find(p => p.id === state.selectedPartnerId);
   const isTerminated = selectedPartner && selectedPartner.currentCompassion <= 0;
+  const compatibility = { ...defaultCompatibility, ...(selectedPartner?.compatibility || {}) };
 
   const terminationMessage = useMemo(() => {
     if (!selectedPartner || !isTerminated) return "";
@@ -376,6 +475,175 @@ const App: React.FC = () => {
       console.error('Failed to save partner:', error);
     }
   };
+
+  const updateCompatibility = (updates: Partial<NonNullable<Partner['compatibility']>>) => {
+    if (!selectedPartner) return;
+    updatePartner({ compatibility: { ...compatibility, ...updates } });
+  };
+
+  const createTarotDeck = () => {
+    const shuffled = [...TAROT_CARDS].sort(() => Math.random() - 0.5);
+    return shuffled.slice(0, 10);
+  };
+
+  const tarotSlug = (name: string) => name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+  const majorArcanaSet = new Set([
+    'The Fool',
+    'The Magician',
+    'The High Priestess',
+    'The Empress',
+    'The Emperor',
+    'The Hierophant',
+    'The Lovers',
+    'The Chariot',
+    'Strength',
+    'The Hermit',
+    'Wheel of Fortune',
+    'Justice',
+    'The Hanged Man',
+    'Death',
+    'Temperance',
+    'The Devil',
+    'The Tower',
+    'The Star',
+    'The Moon',
+    'The Sun',
+    'Judgement',
+    'The World',
+  ]);
+
+  const getTarotSuit = (card: string) => {
+    if (card.includes('Wands')) return 'Wands';
+    if (card.includes('Cups')) return 'Cups';
+    if (card.includes('Swords')) return 'Swords';
+    if (card.includes('Pentacles')) return 'Pentacles';
+    return '';
+  };
+
+  const handleStartTarot = () => {
+    if (!compatibility.tarotQuestion.trim()) return;
+    updateCompatibility({
+      tarotDeck: createTarotDeck(),
+      tarotSelected: [],
+      tarotReading: '',
+    });
+    setTarotDealCount(0);
+    setIsTarotDealing(true);
+  };
+
+  const handleResetTarot = () => {
+    updateCompatibility({
+      tarotQuestion: '',
+      tarotDeck: [],
+      tarotSelected: [],
+      tarotReading: '',
+    });
+    setTarotDealCount(0);
+    setIsTarotDealing(false);
+  };
+
+  const handleSelectTarotCard = async (card: string) => {
+    if (!selectedPartner || isTarotLoading) return;
+    if (compatibility.tarotSelected.includes(card)) return;
+    if (compatibility.tarotSelected.length >= 3) return;
+
+    const nextSelected = [...compatibility.tarotSelected, card];
+    updateCompatibility({ tarotSelected: nextSelected });
+
+    if (nextSelected.length === 3) {
+      setIsTarotLoading(true);
+      try {
+        const reading = await ai.getTarotReading(compatibility.tarotQuestion, nextSelected);
+        updateCompatibility({ tarotReading: reading });
+      } catch (error) {
+        console.error('Failed to generate tarot reading:', error);
+        updateCompatibility({ tarotReading: 'The cards are quiet right now. Try again.' });
+      } finally {
+        setIsTarotLoading(false);
+      }
+    }
+  };
+
+  const getEasternDateKey = () => {
+    const formatter = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'America/New_York',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    });
+    return formatter.format(new Date());
+  };
+
+  const getEasternParts = () => {
+    const formatter = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'America/New_York',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false,
+    });
+    const parts = formatter.formatToParts(new Date());
+    const getPart = (type: string) => parts.find(p => p.type === type)?.value || '0';
+    return {
+      year: parseInt(getPart('year'), 10),
+      month: parseInt(getPart('month'), 10),
+      day: parseInt(getPart('day'), 10),
+      hour: parseInt(getPart('hour'), 10),
+      minute: parseInt(getPart('minute'), 10),
+      second: parseInt(getPart('second'), 10),
+    };
+  };
+
+  const handleGenerateHoroscope = async () => {
+    if (!selectedPartner || !compatibility.userSign || !compatibility.partnerSign || isHoroscopeLoading) return;
+    setIsHoroscopeLoading(true);
+    try {
+      const fortune = await ai.getHoroscopeCompatibility(compatibility.userSign, compatibility.partnerSign);
+      updateCompatibility({ horoscopeFortune: fortune, horoscopeDateKey: getEasternDateKey() });
+    } catch (error) {
+      console.error('Failed to generate horoscope fortune:', error);
+      updateCompatibility({ horoscopeFortune: 'Signal interference. Try again in a moment.' });
+    } finally {
+      setIsHoroscopeLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!selectedPartner || !compatibility.userSign || !compatibility.partnerSign || isHoroscopeLoading) return;
+    const todayKey = getEasternDateKey();
+    if (compatibility.horoscopeDateKey === todayKey && compatibility.horoscopeFortune) return;
+    handleGenerateHoroscope();
+  }, [selectedPartner?.id, compatibility.userSign, compatibility.partnerSign, compatibility.horoscopeDateKey, compatibility.horoscopeFortune]);
+
+  useEffect(() => {
+    if (!selectedPartner || !compatibility.userSign || !compatibility.partnerSign) return;
+    const { year, month, day, hour, minute, second } = getEasternParts();
+    const nowUtc = Date.UTC(year, month - 1, day, hour, minute, second);
+    const nextMidnightUtc = Date.UTC(year, month - 1, day + 1, 0, 0, 5);
+    const delay = Math.max(1000, nextMidnightUtc - nowUtc);
+    const timeoutId = window.setTimeout(() => {
+      handleGenerateHoroscope();
+    }, delay);
+    return () => window.clearTimeout(timeoutId);
+  }, [selectedPartner?.id, compatibility.userSign, compatibility.partnerSign]);
+
+  useEffect(() => {
+    if (!isTarotDealing || compatibility.tarotDeck.length === 0) return;
+    let current = 0;
+    setTarotDealCount(0);
+    const intervalId = window.setInterval(() => {
+      current += 1;
+      setTarotDealCount(current);
+      if (current >= 10) {
+        window.clearInterval(intervalId);
+        setIsTarotDealing(false);
+      }
+    }, 120);
+    return () => window.clearInterval(intervalId);
+  }, [isTarotDealing, compatibility.tarotDeck.length]);
 
   const handleRemovePartner = async () => {
     if (!selectedPartner) return;
@@ -486,7 +754,21 @@ const App: React.FC = () => {
             { id: '4', label: 'Trip together', isCompleted: false },
             { id: '5', label: 'Grocery shopping (Endgame)', isCompleted: false }
           ],
-          interactionLog: [{ id: '0', partnerId, timestamp: Date.now(), type: LogType.SYSTEM, description: "Connection Initialized.", compassionDelta: 0 }]
+          interactionLog: [{ id: '0', partnerId, timestamp: Date.now(), type: LogType.SYSTEM, description: "Connection Initialized.", compassionDelta: 0 }],
+          compatibility: {
+            tarotQuestion: '',
+            tarotDeck: [],
+            tarotSelected: [],
+            tarotReading: '',
+            partnerSign: '',
+            userSign: '',
+            horoscopeFortune: '',
+            horoscopeDateKey: '',
+            libidoRating: 5,
+            wingPreference: '',
+            introExtro: '',
+            faith: '',
+          }
         };
 
         // Save to Firestore
@@ -708,6 +990,7 @@ const App: React.FC = () => {
         <div className="flex-1 flex md:flex-col flex-row gap-2 md:gap-4 px-4 md:px-0 overflow-x-auto md:overflow-visible" data-tutorial="tabs">
           <NavIcon icon={<User size={18}/>} active={state.currentTab === 'dex'} onClick={() => setState(s => ({...s, currentTab: 'dex'}))} label="DEX" />
           <NavIcon icon={<Activity size={18}/>} active={state.currentTab === 'stats'} onClick={() => setState(s => ({...s, currentTab: 'stats'}))} label="STATS" />
+          <NavIcon icon={<Sparkles size={18}/>} active={state.currentTab === 'compat'} onClick={() => setState(s => ({...s, currentTab: 'compat'}))} label="MATCH" />
           <NavIcon icon={<BookOpen size={18}/>} active={state.currentTab === 'lore'} onClick={() => setState(s => ({...s, currentTab: 'lore'}))} label="INTEL" />
           <NavIcon icon={<History size={18}/>} active={state.currentTab === 'history'} onClick={() => setState(s => ({...s, currentTab: 'history'}))} label="LOGS" />
         </div>
@@ -1009,6 +1292,218 @@ const App: React.FC = () => {
                           </div>
                        </DataCard>
                     </div>
+                  </div>
+                )}
+
+                {state.currentTab === 'compat' && (
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                      <DataCard title="Tarot Reading" isEditing={isEditing} onToggleEdit={() => setIsEditing(!isEditing)}>
+                        <div className="space-y-3">
+                          <input
+                            className="w-full bg-[var(--theme-bg-alt,#111111)] border border-[var(--theme-border,#2a2a2a)] rounded px-3 py-2 text-sm text-[var(--theme-text,#F0F6F7)] outline-none focus:border-[var(--theme-border-hover,#3a3a3a)]"
+                            placeholder="Ask your question..."
+                            value={compatibility.tarotQuestion}
+                            onChange={(e) => updateCompatibility({ tarotQuestion: e.target.value })}
+                          />
+                          <button
+                            onClick={compatibility.tarotReading ? handleResetTarot : handleStartTarot}
+                            disabled={(!compatibility.tarotQuestion.trim() && !compatibility.tarotReading) || isTarotDealing}
+                            className="w-full px-3 py-2 rounded border border-[var(--theme-border,#2a2a2a)] text-[10px] font-mono uppercase tracking-wide text-[var(--theme-text-muted,#919FA5)] hover:text-[var(--theme-text,#F0F6F7)] hover:border-[var(--theme-border-hover,#3a3a3a)] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                          >
+                            {isTarotDealing ? 'Shuffling...' : (compatibility.tarotReading ? 'New Reading' : 'Ready for Reading')}
+                          </button>
+                          <div className="grid grid-cols-5 gap-2">
+                            {compatibility.tarotDeck.map((card, index) => {
+                              const isSelected = compatibility.tarotSelected.includes(card);
+                              const isRevealed = isSelected;
+                              const isMajor = majorArcanaSet.has(card);
+                              const cardSrc = isRevealed && isMajor ? `/tarot/${tarotSlug(card)}.png` : '/tarot/back.png';
+                              const suit = getTarotSuit(card);
+                              const isDealt = index < tarotDealCount;
+                              return (
+                                <button
+                                  key={card}
+                                  onClick={() => handleSelectTarotCard(card)}
+                                  className={`h-16 rounded border text-[9px] font-mono uppercase tracking-wide transition-all duration-300 ${
+                                    isRevealed
+                                      ? 'border-[var(--theme-border-hover,#3a3a3a)] bg-[var(--theme-surface,#141414)] text-[var(--theme-text,#F0F6F7)]'
+                                      : 'border-[var(--theme-border,#2a2a2a)] bg-[var(--theme-bg-alt,#111111)] text-[var(--theme-text-subtle,#747474)] hover:border-[var(--theme-border-hover,#3a3a3a)]'
+                                  }`}
+                                  style={{
+                                    opacity: isDealt ? 1 : 0,
+                                    transform: isDealt ? 'translateY(0) scale(1)' : 'translateY(10px) scale(0.9)',
+                                    transitionDelay: `${index * 60}ms`,
+                                  }}
+                                  disabled={isTarotLoading || isTarotDealing || !isDealt || compatibility.tarotSelected.length >= 3 || !compatibility.tarotDeck.length}
+                                >
+                                  <div className="flex flex-col items-center justify-center gap-1">
+                                    {isRevealed && !isMajor ? (
+                                      <div className="w-8 h-10 rounded border border-[var(--theme-border,#2a2a2a)] bg-[var(--theme-bg-alt,#111111)] flex items-center justify-center text-[8px] text-[var(--theme-text,#F0F6F7)]">
+                                        {suit ? suit[0] : 'M'}
+                                      </div>
+                                    ) : (
+                                      <img src={cardSrc} alt={card} className="w-8 h-10 object-contain" />
+                                    )}
+                                    {isRevealed ? (isMajor ? card : card) : 'Card'}
+                                  </div>
+                                </button>
+                              );
+                            })}
+                            {compatibility.tarotDeck.length === 0 && (
+                              <div className="col-span-5 text-[10px] font-mono uppercase tracking-wide text-[var(--theme-text-subtle,#747474)]">
+                                Ask a question to deal 10 cards.
+                              </div>
+                            )}
+                          </div>
+                          <div className="rounded border border-[var(--theme-border,#2a2a2a)] bg-[var(--theme-bg-alt,#111111)] p-3 text-xs text-[var(--theme-text-muted,#919FA5)] min-h-[70px]">
+                            {isTarotLoading
+                              ? 'Shuffling the deck...'
+                              : (compatibility.tarotReading || (isTarotDealing ? 'Dealing the cards...' : 'Pick 3 cards to reveal your reading.'))}
+                          </div>
+                        </div>
+                      </DataCard>
+                      <DataCard title="Horoscope" isEditing={isEditing} onToggleEdit={() => setIsEditing(!isEditing)}>
+                        <div className="space-y-3">
+                          {isEditing ? (
+                            <>
+                              <div className="space-y-1.5">
+                                <div className="text-[10px] font-mono uppercase tracking-wide text-[var(--theme-text-subtle,#747474)]">Their Sign</div>
+                                <select
+                                  className="w-full bg-[var(--theme-bg-alt,#111111)] border border-[var(--theme-border,#2a2a2a)] rounded px-3 py-2 text-sm text-[var(--theme-text,#F0F6F7)] outline-none focus:border-[var(--theme-border-hover,#3a3a3a)]"
+                                  value={compatibility.partnerSign}
+                                  onChange={(e) => updateCompatibility({ partnerSign: e.target.value })}
+                                >
+                                  <option value="">Select sign</option>
+                                  <option value="Aries">Aries</option>
+                                  <option value="Taurus">Taurus</option>
+                                  <option value="Gemini">Gemini</option>
+                                  <option value="Cancer">Cancer</option>
+                                  <option value="Leo">Leo</option>
+                                  <option value="Virgo">Virgo</option>
+                                  <option value="Libra">Libra</option>
+                                  <option value="Scorpio">Scorpio</option>
+                                  <option value="Sagittarius">Sagittarius</option>
+                                  <option value="Capricorn">Capricorn</option>
+                                  <option value="Aquarius">Aquarius</option>
+                                  <option value="Pisces">Pisces</option>
+                                </select>
+                              </div>
+                              <div className="space-y-1.5">
+                                <div className="text-[10px] font-mono uppercase tracking-wide text-[var(--theme-text-subtle,#747474)]">Your Sign</div>
+                                <select
+                                  className="w-full bg-[var(--theme-bg-alt,#111111)] border border-[var(--theme-border,#2a2a2a)] rounded px-3 py-2 text-sm text-[var(--theme-text,#F0F6F7)] outline-none focus:border-[var(--theme-border-hover,#3a3a3a)]"
+                                  value={compatibility.userSign}
+                                  onChange={(e) => updateCompatibility({ userSign: e.target.value })}
+                                >
+                                  <option value="">Select sign</option>
+                                  <option value="Aries">Aries</option>
+                                  <option value="Taurus">Taurus</option>
+                                  <option value="Gemini">Gemini</option>
+                                  <option value="Cancer">Cancer</option>
+                                  <option value="Leo">Leo</option>
+                                  <option value="Virgo">Virgo</option>
+                                  <option value="Libra">Libra</option>
+                                  <option value="Scorpio">Scorpio</option>
+                                  <option value="Sagittarius">Sagittarius</option>
+                                  <option value="Capricorn">Capricorn</option>
+                                  <option value="Aquarius">Aquarius</option>
+                                  <option value="Pisces">Pisces</option>
+                                </select>
+                              </div>
+                            </>
+                          ) : (
+                            <div className="space-y-1 text-sm text-[var(--theme-text,#F0F6F7)]">
+                              <div>Them: {compatibility.partnerSign || 'Unassigned'}</div>
+                              <div>You: {compatibility.userSign || 'Unassigned'}</div>
+                            </div>
+                          )}
+
+                          <div className="rounded border border-[var(--theme-border,#2a2a2a)] bg-[var(--theme-bg-alt,#111111)] p-3 text-xs text-[var(--theme-text-muted,#919FA5)] min-h-[60px]">
+                            {isHoroscopeLoading
+                              ? 'Reading stars...'
+                              : (compatibility.horoscopeFortune || 'Set both signs to reveal today\'s compatibility fortune.')}
+                          </div>
+                          <div className="text-[10px] font-mono uppercase tracking-wide text-[var(--theme-text-subtle,#747474)]">
+                            Auto-refreshes at midnight ET
+                          </div>
+                        </div>
+                      </DataCard>
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                      <DataCard title="Libido Rater" isEditing={isEditing} onToggleEdit={() => setIsEditing(!isEditing)}>
+                        {isEditing ? (
+                          <div className="space-y-3">
+                            <input
+                              type="range"
+                              min="1"
+                              max="10"
+                              className="w-full accent-[var(--theme-primary,#F0F6F7)] h-1"
+                              value={compatibility.libidoRating}
+                              onChange={(e) => updateCompatibility({ libidoRating: parseInt(e.target.value, 10) })}
+                            />
+                            <div className="text-xs text-[var(--theme-text-muted,#919FA5)]">
+                              {compatibility.libidoRating}/10
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="text-sm text-[var(--theme-text,#F0F6F7)]">
+                            {compatibility.libidoRating}/10
+                          </div>
+                        )}
+                      </DataCard>
+                      <DataCard title="Flats or Drumsticks" isEditing={isEditing} onToggleEdit={() => setIsEditing(!isEditing)}>
+                        {isEditing ? (
+                          <select
+                            className="w-full bg-[var(--theme-bg-alt,#111111)] border border-[var(--theme-border,#2a2a2a)] rounded px-3 py-2 text-sm text-[var(--theme-text,#F0F6F7)] outline-none focus:border-[var(--theme-border-hover,#3a3a3a)]"
+                            value={compatibility.wingPreference}
+                            onChange={(e) => updateCompatibility({ wingPreference: e.target.value })}
+                          >
+                            <option value="">Select</option>
+                            <option value="Flats">Flats</option>
+                            <option value="Drumsticks">Drumsticks</option>
+                          </select>
+                        ) : (
+                          <div className="text-sm text-[var(--theme-text,#F0F6F7)]">
+                            {compatibility.wingPreference || 'Unassigned'}
+                          </div>
+                        )}
+                      </DataCard>
+                      <DataCard title="Introvert or Extrovert" isEditing={isEditing} onToggleEdit={() => setIsEditing(!isEditing)}>
+                        {isEditing ? (
+                          <select
+                            className="w-full bg-[var(--theme-bg-alt,#111111)] border border-[var(--theme-border,#2a2a2a)] rounded px-3 py-2 text-sm text-[var(--theme-text,#F0F6F7)] outline-none focus:border-[var(--theme-border-hover,#3a3a3a)]"
+                            value={compatibility.introExtro}
+                            onChange={(e) => updateCompatibility({ introExtro: e.target.value })}
+                          >
+                            <option value="">Select</option>
+                            <option value="Introvert">Introvert</option>
+                            <option value="Extrovert">Extrovert</option>
+                            <option value="Ambivert">Ambivert</option>
+                          </select>
+                        ) : (
+                          <div className="text-sm text-[var(--theme-text,#F0F6F7)]">
+                            {compatibility.introExtro || 'Unassigned'}
+                          </div>
+                        )}
+                      </DataCard>
+                    </div>
+
+                    <DataCard title="Faith" isEditing={isEditing} onToggleEdit={() => setIsEditing(!isEditing)}>
+                      {isEditing ? (
+                        <input
+                          className="w-full bg-[var(--theme-bg-alt,#111111)] border border-[var(--theme-border,#2a2a2a)] rounded px-3 py-2 text-sm text-[var(--theme-text,#F0F6F7)] outline-none focus:border-[var(--theme-border-hover,#3a3a3a)]"
+                          placeholder="e.g., Spiritual, Christian, Agnostic"
+                          value={compatibility.faith}
+                          onChange={(e) => updateCompatibility({ faith: e.target.value })}
+                        />
+                      ) : (
+                        <div className="text-sm text-[var(--theme-text,#F0F6F7)]">
+                          {compatibility.faith || 'Unassigned'}
+                        </div>
+                      )}
+                    </DataCard>
                   </div>
                 )}
 

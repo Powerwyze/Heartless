@@ -96,6 +96,20 @@ export interface Partner {
   };
   dateChecklist: { id: string; label: string; isCompleted: boolean }[];
   interactionLog: InteractionLog[];
+  compatibility?: {
+    tarotQuestion: string;
+    tarotDeck: string[];
+    tarotSelected: string[];
+    tarotReading: string;
+    partnerSign: string;
+    userSign: string;
+    horoscopeFortune: string;
+    horoscopeDateKey: string;
+    libidoRating: number;
+    wingPreference: string;
+    introExtro: string;
+    faith: string;
+  };
 }
 
 export interface AuthUser {
