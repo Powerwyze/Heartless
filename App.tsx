@@ -1120,7 +1120,7 @@ const App: React.FC = () => {
                 <div ref={chatBottomRef} />
               </div>
               <div className="mt-4 md:mt-6 flex gap-3 p-3 bg-[var(--theme-surface,#141414)] rounded border border-[var(--theme-border,#2a2a2a)] items-center">
-                {onboardingStep === 1 && (
+                {onboardingStep <= 1 && (
                   <button onClick={() => fileInputRef.current?.click()} className={`p-3 rounded transition-colors shrink-0 border ${uploadedImage ? 'bg-green-950/30 text-green-400 border-green-900/50' : 'bg-[var(--theme-bg-alt,#111111)] text-[var(--theme-text-muted,#919FA5)] border-[var(--theme-border,#2a2a2a)] hover:border-[var(--theme-border-hover,#3a3a3a)]'}`}>
                     {uploadedImage ? <CheckCircle2 size={20} /> : <Camera size={20} />}
                   </button>
