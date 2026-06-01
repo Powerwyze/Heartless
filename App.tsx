@@ -772,26 +772,33 @@ const App: React.FC = () => {
         setIsProcessing(false);
       }, 1000);
     } else {
+      try {
         const profile = await ai.synthesizeProfile(newHistory, groupKey);
-      if (profile && authUser) {
-        // Generate partner ID first so we can use it for sprite upload
-        const partnerId = Math.random().toString(36).substr(2, 9);
+        if (profile && authUser) {
+          // Generate partner ID first so we can use it for sprite upload
+          const partnerId = Math.random().toString(36).substr(2, 9);
 
-        // Generate sprite and upload to Firebase Storage
-        const sprite = await ai.generateSprite(
-          `${profile.name} - ${profile.category}`,
-          authUser.uid,
-          partnerId,
-          uploadedImage || undefined
-        );
+          // Generate sprite and upload to Firebase Storage
+          let sprite = uploadedImage || '';
+          try {
+            sprite = await ai.generateSprite(
+              `${profile.name} - ${profile.category}`,
+              authUser.uid,
+              partnerId,
+              uploadedImage || undefined
+            );
+          } catch (spriteError) {
+            console.error('Sprite generation failed, falling back to uploaded image', spriteError);
+            sprite = uploadedImage || '';
+          }
 
-        const newPartner: Partner = {
-          id: partnerId,
-          userId: authUser.uid,
-          dexNumber: (state.partners.length + 1).toString().padStart(3, '0'),
-          name: profile.name,
-          category: profile.category,
-          flavorText: profile.flavorText,
+          const newPartner: Partner = {
+            id: partnerId,
+            userId: authUser.uid,
+            dexNumber: (state.partners.length + 1).toString().padStart(3, '0'),
+            name: profile.name,
+            category: profile.category,
+            flavorText: profile.flavorText,
           totalCompassion: 10,
           currentCompassion: 7,
           relationshipType: profile.relationshipType as RelationshipType,
@@ -835,17 +842,25 @@ const App: React.FC = () => {
           }
         };
 
-        // Save to Firestore
-        try {
-          await createPartner(authUser.uid, newPartner);
-          setState(prev => ({ ...prev, partners: [...prev.partners, newPartner], selectedPartnerId: newPartner.id, currentTab: 'dex' }));
-          setIsOnboarding(false);
-          setOnboardingStep(0);
-        } catch (error) {
-          console.error('Failed to create partner:', error);
+          // Save to Firestore
+          try {
+            await createPartner(authUser.uid, newPartner);
+            setState(prev => ({ ...prev, partners: [...prev.partners, newPartner], selectedPartnerId: newPartner.id, currentTab: 'dex' }));
+            setIsOnboarding(false);
+            setOnboardingStep(0);
+          } catch (error) {
+            console.error('Failed to create partner:', error);
+            setChatHistory(prev => [...prev, { role: 'Cupid', text: 'Could not save profile. Try again in a moment.' }]);
+          }
+        } else {
+          setChatHistory(prev => [...prev, { role: 'Cupid', text: 'AI could not build the profile. Try again.' }]);
         }
+      } catch (error) {
+        console.error('Onboarding generation failed:', error);
+        setChatHistory(prev => [...prev, { role: 'Cupid', text: 'Generation failed. I saved your answers—try submit once more.' }]);
+      } finally {
+        setIsProcessing(false);
       }
-      setIsProcessing(false);
     }
   };
 
