@@ -5,7 +5,13 @@ export class HeartlessAIService {
   private ai: GoogleGenAI;
 
   constructor() {
-    this.ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const apiKey =
+      (typeof process !== 'undefined' ? (process.env.GEMINI_API_KEY || process.env.API_KEY) : undefined) ||
+      (import.meta as any)?.env?.VITE_GEMINI_API_KEY ||
+      (import.meta as any)?.env?.GEMINI_API_KEY ||
+      (import.meta as any)?.env?.API_KEY;
+
+    this.ai = new GoogleGenAI({ apiKey });
   }
 
   async generateSprite(
@@ -33,10 +39,12 @@ export class HeartlessAIService {
 
     const parts: any[] = [{ text: prompt }];
     if (base64Image) {
-      const cleanBase64 = base64Image.includes(',') ? base64Image.split(',')[1] : base64Image;
+      const match = base64Image.match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,(.*)$/);
+      const mimeType = match?.[1] || "image/png";
+      const cleanBase64 = match?.[2] || (base64Image.includes(',') ? base64Image.split(',')[1] : base64Image);
       parts.push({
         inlineData: {
-          mimeType: "image/png",
+          mimeType,
           data: cleanBase64
         }
       });
@@ -44,7 +52,7 @@ export class HeartlessAIService {
 
     try {
       const response = await this.ai.models.generateContent({
-        model: 'gemini-2.5-flash-image',
+        model: 'gemini-2.5-flash-image-preview',
         contents: { parts }
       });
 
@@ -61,10 +69,10 @@ export class HeartlessAIService {
           return storageUrl;
         }
       }
-      return 'https://picsum.photos/400/600?grayscale';
+      return base64Image || 'https://picsum.photos/400/600?grayscale';
     } catch (error) {
       console.error(`Couldn't create character: ${variant}`, error);
-      return 'https://picsum.photos/400/600?blur';
+      return base64Image || 'https://picsum.photos/400/600?blur';
     }
   }
 
