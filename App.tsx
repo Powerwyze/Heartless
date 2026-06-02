@@ -842,10 +842,12 @@ const App: React.FC = () => {
           }
         };
 
-          // Save to Firestore
+          // Save to Supabase
           try {
-            await createPartner(authUser.uid, newPartner);
-            setState(prev => ({ ...prev, partners: [...prev.partners, newPartner], selectedPartnerId: newPartner.id, currentTab: 'dex' }));
+            const insertedId = await createPartner(authUser.uid, newPartner);
+            // Use the DB-generated UUID so subsequent updates/deletes hit the right row.
+            const persistedPartner: Partner = { ...newPartner, id: insertedId };
+            setState(prev => ({ ...prev, partners: [...prev.partners, persistedPartner], selectedPartnerId: insertedId, currentTab: 'dex' }));
             setIsOnboarding(false);
             setOnboardingStep(0);
           } catch (error) {

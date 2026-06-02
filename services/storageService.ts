@@ -1,10 +1,7 @@
-import {
-  ref,
-  uploadBytes,
-  getDownloadURL,
-  deleteObject,
-} from 'firebase/storage';
-import { storage } from '../src/config/firebase';
+import { supabase } from '../src/config/supabase';
+
+const BUCKET = 'heartless-sprites';
+const PUBLIC_PREFIX = `/storage/v1/object/public/${BUCKET}/`;
 
 export const uploadSprite = async (
   userId: string,
@@ -13,15 +10,16 @@ export const uploadSprite = async (
   fileName: string
 ): Promise<string> => {
   try {
-    const timestamp = Date.now();
     const sanitizedFileName = fileName.replace(/[^a-zA-Z0-9.-]/g, '_');
-    const storagePath = `sprites/${userId}/${partnerId}/${timestamp}_${sanitizedFileName}`;
-    const storageRef = ref(storage, storagePath);
+    const path = `${userId}/${partnerId}/${Date.now()}_${sanitizedFileName}`;
 
-    await uploadBytes(storageRef, imageBlob);
-    const downloadURL = await getDownloadURL(storageRef);
+    const { error } = await supabase.storage
+      .from(BUCKET)
+      .upload(path, imageBlob, { contentType: imageBlob.type || 'image/png', upsert: true });
+    if (error) throw error;
 
-    return downloadURL;
+    const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
+    return data.publicUrl;
   } catch (error) {
     console.error('Error uploading sprite:', error);
     throw new Error('Failed to upload sprite');
@@ -32,42 +30,36 @@ export const deleteSprite = async (spriteUrl: string): Promise<void> => {
   try {
     if (!spriteUrl) return;
 
-    // Extract the path from the Firebase Storage URL
-    const url = new URL(spriteUrl);
-    const path = url.pathname.split('/o/')[1]?.split('?')[0];
-
+    const idx = spriteUrl.indexOf(PUBLIC_PREFIX);
+    if (idx === -1) {
+      console.warn('Invalid sprite URL, cannot delete');
+      return;
+    }
+    const path = decodeURIComponent(spriteUrl.slice(idx + PUBLIC_PREFIX.length).split('?')[0]);
     if (!path) {
       console.warn('Invalid sprite URL, cannot delete');
       return;
     }
 
-    const decodedPath = decodeURIComponent(path);
-    const storageRef = ref(storage, decodedPath);
-
-    await deleteObject(storageRef);
-  } catch (error: any) {
-    // If the file doesn't exist, that's okay
-    if (error.code === 'storage/object-not-found') {
-      console.warn('Sprite not found, may have been already deleted');
-      return;
+    const { error } = await supabase.storage.from(BUCKET).remove([path]);
+    if (error) {
+      // Swallow not-found; surface anything else.
+      console.warn('Sprite may have already been deleted:', error.message);
     }
+  } catch (error) {
     console.error('Error deleting sprite:', error);
-    throw new Error('Failed to delete sprite');
   }
 };
 
 export const getSpriteUrl = async (userId: string, partnerId: string, fileName: string): Promise<string | null> => {
   try {
-    const storagePath = `sprites/${userId}/${partnerId}/${fileName}`;
-    const storageRef = ref(storage, storagePath);
-    const downloadURL = await getDownloadURL(storageRef);
-    return downloadURL;
-  } catch (error: any) {
-    if (error.code === 'storage/object-not-found') {
-      return null;
-    }
-    console.error('Error getting sprite URL:', error);
-    throw new Error('Failed to get sprite URL');
+    const path = `${userId}/${partnerId}/${fileName}`;
+    const { error } = await supabase.storage.from(BUCKET).download(path);
+    if (error) return null;
+    const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
+    return data.publicUrl;
+  } catch {
+    return null;
   }
 };
 

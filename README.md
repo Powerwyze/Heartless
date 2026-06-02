@@ -10,11 +10,17 @@ View your app in AI Studio: https://ai.studio/apps/drive/1JMPPuCtwK06sFNSYWlI9hc
 
 ## Run Locally
 
-**Prerequisites:**  Node.js
-
+**Prerequisites:**  Node.js, a Supabase project, and a Gemini API key.
 
 1. Install dependencies:
    `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
+2. Create a `.env.local` with the following environment variables:
+   - `VITE_SUPABASE_URL` — your Supabase project URL
+   - `VITE_SUPABASE_ANON_KEY` — your Supabase anon/publishable key
+   - `GEMINI_API_KEY` / `VITE_GEMINI_API_KEY` — your Gemini API key
 3. Run the app:
    `npm run dev`
+
+This app uses [Supabase](https://supabase.com) for Auth, Postgres (the `heartless`
+schema), and Storage (the `heartless-sprites` bucket), and the Gemini API for
+sprite/content generation.
