@@ -9,6 +9,7 @@ import { onAuthStateChange, signOut as firebaseSignOut, deleteAccount as deleteF
 import { getPartners, createPartner, updatePartner as updatePartnerFirestore, addInteractionLog, updateChecklistItem as updateChecklistFirestore, addTrait, addPreference, deleteTrait, deletePreference, deletePartner, deleteUserData } from './services/firestoreService';
 import { AuthUI } from './components/AuthUI';
 import { Tutorial } from './components/Tutorial';
+import { WelcomeModal } from './components/WelcomeModal';
 import { Settings } from './components/Settings';
 import { getTheme } from './src/config/themes';
 
@@ -272,6 +273,7 @@ const App: React.FC = () => {
 
   // Tutorial State
   const [showTutorial, setShowTutorial] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(false);
 
   // Settings State
   const [showSettings, setShowSettings] = useState(false);
@@ -434,9 +436,15 @@ const App: React.FC = () => {
           isLoadingPartners: false,
         }));
 
-        // Check if user has seen tutorial
+        // Decide which onboarding moment to show.
+        const hasSeenWelcome = localStorage.getItem('heartless_welcome_seen');
         const hasSeenTutorial = localStorage.getItem('heartless_tutorial_completed');
-        if (!hasSeenTutorial) {
+        if (partners.length === 0 && !hasSeenWelcome) {
+          // Brand-new zero-partner user: show the welcome popup, suppress Tutorial.
+          setTimeout(() => {
+            setShowWelcome(true);
+          }, 500);
+        } else if (!hasSeenTutorial) {
           // Show tutorial after a short delay
           setTimeout(() => {
             setShowTutorial(true);
@@ -1777,6 +1785,22 @@ const App: React.FC = () => {
       </Modal>
 
       {state.showPRD && <PRDView onClose={() => setState(s => ({ ...s, showPRD: false }))} />}
+
+      {/* Welcome Popup (first-time, empty dex) */}
+      <WelcomeModal
+        isOpen={showWelcome && !isOnboarding}
+        onClose={() => {
+          localStorage.setItem('heartless_welcome_seen', 'true');
+          localStorage.setItem('heartless_tutorial_completed', 'true');
+          setShowWelcome(false);
+        }}
+        onStart={() => {
+          localStorage.setItem('heartless_welcome_seen', 'true');
+          localStorage.setItem('heartless_tutorial_completed', 'true');
+          setShowWelcome(false);
+          startOnboarding();
+        }}
+      />
 
       {/* Tutorial Overlay */}
       <Tutorial
