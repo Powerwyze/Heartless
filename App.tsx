@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { Heart, Plus, Power, MessageSquare, Camera, User, History, Activity, ShieldAlert, BookOpen, Settings as SettingsIcon, Image as ImageIcon, CheckCircle2, ArrowRight, X, ThumbsUp, ThumbsDown, Sparkles, AlertCircle, Send, Zap, Shield, Target, Award, Brain, Star, MapPin, CheckSquare, Square, Clock, TrendingUp, Info, Save, Edit2, Trash2, PlusCircle, Archive } from 'lucide-react';
 import { Partner, RelationshipType, InteractionLog, AppState, LogType, Trait, Preference, AuthUser } from './types';
 import { INITIAL_PARTNERS } from './constants';
-import { PixelButton as ModernButton, CompassionMeter, StatBar, TagPill, RadarChart, Modal } from './components/RetroUI';
+import { PixelButton as ModernButton, CompassionMeter, StatBar, TagPill, RadarChart, Modal, PokedexScreen, PokedexLED, TabHeader } from './components/RetroUI';
 import { PRDView } from './components/PRDView';
 import { HeartlessAIService } from './services/geminiService';
 import { onAuthStateChange, signOut as firebaseSignOut, deleteAccount as deleteFirebaseAccount } from './services/authService';
@@ -713,7 +713,7 @@ const App: React.FC = () => {
     setOnboardingGroup(null);
   };
 
-  const exitOnboarding = () => {
+  const exitOnboarding = (nextTab: AppState['currentTab'] = 'dex') => {
     setIsOnboarding(false);
     setOnboardingStep(0);
     setChatHistory([]);
@@ -721,7 +721,7 @@ const App: React.FC = () => {
     setUploadedImage(null);
     setOnboardingGroup(null);
     setIsProcessing(false);
-    setState(prev => ({ ...prev, currentTab: 'dex' }));
+    setState(prev => ({ ...prev, currentTab: nextTab }));
   };
 
   const handleOnboardingChat = async () => {
@@ -1087,18 +1087,18 @@ const App: React.FC = () => {
         <button
           className="w-11 h-11 md:w-10 md:h-10 flex items-center justify-center shrink-0 md:mb-8 mb-0 ml-2 md:ml-0 rounded border border-[var(--theme-border,#2a2a2a)] hover:border-[var(--theme-border-hover,#3a3a3a)] transition-colors"
           style={{ color: currentTheme.colors.primary }}
-          onClick={() => setShowSettings(true)}
+          onClick={() => { if (isOnboarding) exitOnboarding(); setShowSettings(true); }}
           aria-label="Open theme settings"
         >
           <Heart size={18} fill="currentColor" />
         </button>
         <div className="flex-1 flex md:flex-col flex-row gap-1 md:gap-4 px-2 md:px-0 overflow-x-auto md:overflow-visible custom-scrollbar" data-tutorial="tabs">
-          <NavIcon icon={<User size={18}/>} active={state.currentTab === 'dex'} onClick={() => setState(s => ({...s, currentTab: 'dex'}))} label="DEX" />
-          <NavIcon icon={<Activity size={18}/>} active={state.currentTab === 'stats'} onClick={() => setState(s => ({...s, currentTab: 'stats'}))} label="STATS" />
-          <NavIcon icon={<Sparkles size={18}/>} active={state.currentTab === 'compat'} onClick={() => setState(s => ({...s, currentTab: 'compat'}))} label="MATCH" />
-          <NavIcon icon={<Archive size={18}/>} active={state.currentTab === 'storage'} onClick={() => setState(s => ({...s, currentTab: 'storage'}))} label="STORAGE" />
-          <NavIcon icon={<BookOpen size={18}/>} active={state.currentTab === 'lore'} onClick={() => setState(s => ({...s, currentTab: 'lore'}))} label="INTEL" />
-          <NavIcon icon={<History size={18}/>} active={state.currentTab === 'history'} onClick={() => setState(s => ({...s, currentTab: 'history'}))} label="LOGS" />
+          <NavIcon icon={<User size={18}/>} active={!isOnboarding && state.currentTab === 'dex'} onClick={() => { if (isOnboarding) { exitOnboarding('dex'); } else { setState(s => ({...s, currentTab: 'dex'})); } }} label="DEX" />
+          <NavIcon icon={<Activity size={18}/>} active={!isOnboarding && state.currentTab === 'stats'} onClick={() => { if (isOnboarding) { exitOnboarding('stats'); } else { setState(s => ({...s, currentTab: 'stats'})); } }} label="STATS" />
+          <NavIcon icon={<Sparkles size={18}/>} active={!isOnboarding && state.currentTab === 'compat'} onClick={() => { if (isOnboarding) { exitOnboarding('compat'); } else { setState(s => ({...s, currentTab: 'compat'})); } }} label="MATCH" />
+          <NavIcon icon={<Archive size={18}/>} active={!isOnboarding && state.currentTab === 'storage'} onClick={() => { if (isOnboarding) { exitOnboarding('storage'); } else { setState(s => ({...s, currentTab: 'storage'})); } }} label="STORAGE" />
+          <NavIcon icon={<BookOpen size={18}/>} active={!isOnboarding && state.currentTab === 'lore'} onClick={() => { if (isOnboarding) { exitOnboarding('lore'); } else { setState(s => ({...s, currentTab: 'lore'})); } }} label="INTEL" />
+          <NavIcon icon={<History size={18}/>} active={!isOnboarding && state.currentTab === 'history'} onClick={() => { if (isOnboarding) { exitOnboarding('history'); } else { setState(s => ({...s, currentTab: 'history'})); } }} label="LOGS" />
         </div>
         <div className="mt-0 md:mt-auto flex md:flex-col flex-row gap-1 md:gap-4 mr-2 md:mr-0">
           <div data-tutorial="new-button">
@@ -1199,7 +1199,12 @@ const App: React.FC = () => {
                 >
                   {isEditing ? <Save size={14} /> : <Edit2 size={14} />}
                 </button>
-                <div className="relative w-full aspect-square flex items-center justify-center bg-[var(--theme-bg-alt,#111111)] rounded overflow-hidden">
+                <div className="w-full flex items-center gap-2 mb-2 px-1">
+                   <PokedexLED tone="green" />
+                   <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-emerald-400">Entry #{selectedPartner.dexNumber}</span>
+                   <span className="ml-auto font-mono text-[9px] uppercase tracking-wide text-[var(--theme-text-subtle,#747474)]">{selectedPartner.status}</span>
+                </div>
+                <div className="relative w-full aspect-square flex items-center justify-center bg-[var(--theme-bg-alt,#111111)] rounded overflow-hidden border-2 border-emerald-500/20">
                      <img src={selectedPartner.spriteUrl} className={`w-3/4 h-3/4 object-contain z-10 transition-all duration-300 ${isTerminated ? 'opacity-20 grayscale' : 'grayscale hover:grayscale-0'}`} />
                      {isTerminated && (
                        <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none">
@@ -1257,6 +1262,7 @@ const App: React.FC = () => {
               <div className="flex-1 overflow-y-auto pr-0 md:pr-4 space-y-4 md:space-y-6 custom-scrollbar">
                 {state.currentTab === 'dex' && (
                   <div className="space-y-6">
+                    <TabHeader tone="green" title="Pokedex Entry" counter={`#${selectedPartner.dexNumber}`} icon={<User size={14} />} />
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                        <DataCard title="TRAITS & ABILITIES" isEditing={isEditing} onToggleEdit={() => setIsEditing(!isEditing)}>
                          <div className="space-y-4">
@@ -1346,8 +1352,10 @@ const App: React.FC = () => {
 
                 {state.currentTab === 'stats' && (
                   <div className="space-y-6">
+                    <TabHeader tone="amber" title="Battle Stats" counter="ANALYTICS" icon={<Activity size={14} />} />
                     <div className="flex flex-col lg:flex-row gap-4 items-stretch">
                        <DataCard title="Base Stats" className="flex-1" isEditing={isEditing} onToggleEdit={() => setIsEditing(!isEditing)}>
+                          <PokedexScreen tone="amber">
                           <div className="space-y-4 py-2">
                              {(['compassion', 'smarts', 'looks', 'personality', 'reliability', 'chemistry'] as const).map(key => (
                                <div key={key} className="space-y-1">
@@ -1362,11 +1370,13 @@ const App: React.FC = () => {
                                  <StatBar
                                   label={key === 'compassion' ? 'Compassion' : key.charAt(0).toUpperCase() + key.slice(1)}
                                   value={selectedPartner.stats[key]}
-                                  color="bg-[var(--theme-primary,#F0F6F7)]"
+                                  tone="amber"
+                                  segmented
                                  />
                                </div>
                              ))}
                           </div>
+                          </PokedexScreen>
                        </DataCard>
                        <DataCard title="Connection Radar" className="w-full lg:w-64 flex items-center justify-center" showEditToggle={false}>
                           <RadarChart stats={[
@@ -1423,6 +1433,7 @@ const App: React.FC = () => {
 
                 {state.currentTab === 'compat' && (
                   <div className="space-y-6">
+                    <TabHeader tone="pink" title="Match Protocol" counter="COMPATIBILITY" icon={<Sparkles size={14} />} />
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                       <DataCard title="Tarot Reading" isEditing={isEditing} onToggleEdit={() => setIsEditing(!isEditing)}>
                         <div className="space-y-3">
@@ -1451,10 +1462,10 @@ const App: React.FC = () => {
                                 <button
                                   key={card}
                                   onClick={() => handleSelectTarotCard(card)}
-                                  className={`h-16 rounded border text-[9px] font-mono uppercase tracking-wide transition-all duration-300 ${
+                                  className={`h-16 rounded border-2 text-[9px] font-mono uppercase tracking-wide transition-all duration-300 ${
                                     isRevealed
-                                      ? 'border-[var(--theme-border-hover,#3a3a3a)] bg-[var(--theme-surface,#141414)] text-[var(--theme-text,#F0F6F7)]'
-                                      : 'border-[var(--theme-border,#2a2a2a)] bg-[var(--theme-bg-alt,#111111)] text-[var(--theme-text-subtle,#747474)] hover:border-[var(--theme-border-hover,#3a3a3a)]'
+                                      ? 'border-pink-500/50 bg-pink-950/20 text-[var(--theme-text,#F0F6F7)] shadow-[0_0_8px_rgba(236,72,153,0.15)]'
+                                      : 'border-[var(--theme-border,#2a2a2a)] bg-[var(--theme-bg-alt,#111111)] text-[var(--theme-text-subtle,#747474)] hover:border-pink-500/30'
                                   }`}
                                   style={{
                                     opacity: isDealt ? 1 : 0,
@@ -1635,6 +1646,7 @@ const App: React.FC = () => {
 
                 {state.currentTab === 'storage' && (
                   <div className="space-y-6">
+                    <TabHeader tone="blue" title="Storage Box" counter={`${state.partners.length} STORED`} icon={<Archive size={14} />} />
                     {['family', 'friend', 'romantic'].map((group) => {
                       const groupLabel = group === 'family' ? 'Family Storage' : group === 'friend' ? 'Friend Storage' : 'Romantic Storage';
                       const groupPartners = state.partners.filter(p => getRelationshipGroup(p.relationshipType) === group);
@@ -1651,12 +1663,24 @@ const App: React.FC = () => {
                           {groupPartners.length === 0 ? (
                             <div className="text-sm text-[var(--theme-text-muted,#919FA5)]">No entries yet.</div>
                           ) : (
-                            <div className="space-y-2">
+                            <div
+                              className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 p-2 rounded border-2 border-blue-500/20"
+                              style={{ backgroundImage: 'repeating-conic-gradient(rgba(59,130,246,0.04) 0% 25%, transparent 0% 50%)', backgroundSize: '20px 20px' }}
+                            >
                               {groupPartners.map(p => (
-                                <div key={p.id} className="flex items-center justify-between rounded border border-[var(--theme-border,#2a2a2a)] bg-[var(--theme-bg-alt,#111111)] px-3 py-2">
-                                  <div className="text-sm text-[var(--theme-text,#F0F6F7)]">{p.name}</div>
-                                  <div className="text-[10px] font-mono uppercase tracking-wide text-[var(--theme-text-subtle,#747474)]">{p.relationshipType}</div>
-                                </div>
+                                <button
+                                  key={p.id}
+                                  onClick={() => setState(s => ({...s, selectedPartnerId: p.id, currentTab: 'dex'}))}
+                                  className="group flex flex-col items-center gap-1.5 rounded border-2 border-blue-500/20 bg-[var(--theme-bg-alt,#111111)] p-2 transition-colors hover:border-blue-400/60"
+                                >
+                                  <div className="w-full aspect-square rounded bg-[var(--theme-surface,#141414)] overflow-hidden flex items-center justify-center">
+                                    <img src={p.spriteUrl} alt={p.name} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all" />
+                                  </div>
+                                  <div className="w-full text-center">
+                                    <div className="font-mono text-[9px] text-blue-400 tracking-wide">#{p.dexNumber}</div>
+                                    <div className="text-xs text-[var(--theme-text,#F0F6F7)] truncate">{p.name}</div>
+                                  </div>
+                                </button>
                               ))}
                             </div>
                           )}
@@ -1667,7 +1691,8 @@ const App: React.FC = () => {
                 )}
 
                 {state.currentTab === 'lore' && (
-                  <div className="space-y-6">
+                  <div className="space-y-6 rounded-lg bg-purple-950/10 p-3 -m-1 border border-purple-500/10">
+                    <TabHeader tone="purple" title="Intel Dossier" counter="CLASSIFIED" icon={<BookOpen size={14} />} />
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                        <DataCard title="Meeting Data" isEditing={isEditing} onToggleEdit={() => setIsEditing(!isEditing)}>
                           <div className="flex items-start gap-3 py-2">
@@ -1759,10 +1784,11 @@ const App: React.FC = () => {
 
                 {state.currentTab === 'history' && (
                   <div className="space-y-3">
+                    <TabHeader tone="red" title="Incident Log" counter={`${selectedPartner.interactionLog.length} ENTRIES`} icon={<History size={14} />} />
                     {selectedPartner.interactionLog.map(l => (
-                      <div key={l.id} className="glass p-4 flex justify-between items-center gap-3 hover:bg-[var(--theme-bg-alt,#111111)] transition-colors">
+                      <div key={l.id} className={`glass p-4 flex justify-between items-center gap-3 hover:bg-[var(--theme-bg-alt,#111111)] transition-colors border-l-4 ${l.type === LogType.NEGATIVE ? 'border-l-red-400/60' : l.type === LogType.POSITIVE ? 'border-l-green-400/60' : 'border-l-[var(--theme-border,#2a2a2a)]'}`}>
                         <div className="flex items-start gap-3 md:gap-4 min-w-0">
-                          <div className={`mt-1.5 shrink-0 w-1.5 h-1.5 rounded-full ${l.type === LogType.NEGATIVE ? 'bg-red-400' : l.type === LogType.POSITIVE ? 'bg-green-400' : 'bg-[var(--theme-text-subtle,#747474)]'}`}></div>
+                          <div className={`mt-1.5 shrink-0 w-2 h-2 rounded-full animate-pulse ${l.type === LogType.NEGATIVE ? 'bg-red-400 shadow-[0_0_6px_currentColor] text-red-400' : l.type === LogType.POSITIVE ? 'bg-green-400 shadow-[0_0_6px_currentColor] text-green-400' : 'bg-[var(--theme-text-subtle,#747474)]'}`}></div>
                           <div className="min-w-0">
                             <p className="text-sm text-[var(--theme-text,#F0F6F7)] leading-relaxed break-words">{l.description}</p>
                             <p className="font-mono text-[9px] text-[var(--theme-text-subtle,#747474)] mt-1">{new Date(l.timestamp).toLocaleString()}</p>

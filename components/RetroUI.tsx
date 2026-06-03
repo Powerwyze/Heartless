@@ -45,20 +45,74 @@ export const CompassionMeter: React.FC<{ current: number, max: number, big?: boo
   return <div className="flex flex-wrap justify-center gap-1.5 md:gap-1">{hearts}</div>;
 };
 
-export const StatBar: React.FC<{ label: string, value: number, color?: string }> = ({ label, value, color = 'bg-[var(--theme-primary,#F0F6F7)]' }) => (
-  <div className="w-full">
-    <div className="flex justify-between items-center mb-1.5 px-1">
-      <span className="font-mono text-[10px] font-medium uppercase tracking-label text-[var(--theme-text-subtle,#747474)]">{label}</span>
-      <span className="font-mono text-[10px] font-medium text-[var(--theme-text-muted,#919FA5)]">{value}%</span>
-    </div>
-    <div className="h-1.5 bg-[var(--theme-border,#2a2a2a)] rounded-sm overflow-hidden">
-      <div
-        className={`h-full ${color} transition-all duration-700`}
-        style={{ width: `${value}%` }}
-      ></div>
+// Pokedex accent tones — maps a tone name to Tailwind utility classes.
+// Theme vars stay the source of truth for chrome; tones only tint per-tab accents.
+export type PokedexTone = 'green' | 'amber' | 'red' | 'blue' | 'purple' | 'pink';
+
+export const toneClasses: Record<PokedexTone, { text: string; bg: string; dot: string; border: string; glow: string; fill: string }> = {
+  green:  { text: 'text-emerald-400', bg: 'bg-emerald-400',  dot: 'bg-emerald-400',  border: 'border-emerald-500/30', glow: 'bg-emerald-500/[0.04]', fill: 'from-emerald-500 to-emerald-300' },
+  amber:  { text: 'text-amber-400',   bg: 'bg-amber-400',    dot: 'bg-amber-400',    border: 'border-amber-500/30',   glow: 'bg-amber-500/[0.04]',   fill: 'from-amber-500 to-amber-300' },
+  red:    { text: 'text-red-400',     bg: 'bg-red-400',      dot: 'bg-red-400',      border: 'border-red-500/30',     glow: 'bg-red-500/[0.04]',     fill: 'from-red-500 to-red-300' },
+  blue:   { text: 'text-blue-400',    bg: 'bg-blue-400',     dot: 'bg-blue-400',     border: 'border-blue-500/30',    glow: 'bg-blue-500/[0.04]',    fill: 'from-blue-500 to-blue-300' },
+  purple: { text: 'text-purple-400',  bg: 'bg-purple-400',   dot: 'bg-purple-400',   border: 'border-purple-500/30',  glow: 'bg-purple-500/[0.06]',  fill: 'from-purple-500 to-purple-300' },
+  pink:   { text: 'text-pink-400',    bg: 'bg-pink-400',     dot: 'bg-pink-400',     border: 'border-pink-500/30',    glow: 'bg-pink-500/[0.05]',    fill: 'from-pink-500 to-pink-300' },
+};
+
+// Small animated status LED, Pokedex-device style.
+export const PokedexLED: React.FC<{ tone?: PokedexTone, size?: number }> = ({ tone = 'green', size = 9 }) => (
+  <span
+    className={`inline-block rounded-full ${toneClasses[tone].dot} animate-pulse shadow-[0_0_6px_currentColor]`}
+    style={{ width: size, height: size }}
+  />
+);
+
+// CRT/LCD "screen-within-a-screen" wrapper: chunky bezel + inner inset + tinted glow.
+export const PokedexScreen: React.FC<{ tone?: PokedexTone, children: React.ReactNode, className?: string }> = ({ tone = 'green', children, className = '' }) => (
+  <div className={`relative rounded-lg border-4 ${toneClasses[tone].border} bg-[var(--theme-bg-alt,#111111)] shadow-inner overflow-hidden ${className}`}>
+    <div className={`pointer-events-none absolute inset-0 ${toneClasses[tone].glow}`} />
+    <div className="relative rounded border border-[var(--theme-border,#2a2a2a)] m-1.5 p-3 md:p-4 bg-[var(--theme-surface,#141414)]/60">
+      {children}
     </div>
   </div>
 );
+
+// Sticky HUD header for each tab: colored band + mono caps title + LED + counter.
+export const TabHeader: React.FC<{ tone?: PokedexTone, title: string, counter?: string, icon?: React.ReactNode }> = ({ tone = 'green', title, counter, icon }) => (
+  <div className={`sticky top-0 z-10 -mx-1 mb-1 flex items-center gap-3 rounded border-l-4 ${toneClasses[tone].border.replace('/30', '')} bg-[var(--theme-bg-alt,#111111)] px-3 py-2 backdrop-blur`}>
+    <PokedexLED tone={tone} />
+    {icon && <span className={toneClasses[tone].text}>{icon}</span>}
+    <h3 className={`font-mono text-xs md:text-sm font-semibold uppercase tracking-[0.15em] ${toneClasses[tone].text}`}>{title}</h3>
+    {counter && (
+      <span className="ml-auto font-mono text-[10px] uppercase tracking-wide text-[var(--theme-text-subtle,#747474)]">{counter}</span>
+    )}
+  </div>
+);
+
+export const StatBar: React.FC<{ label: string, value: number, color?: string, tone?: PokedexTone, segmented?: boolean }> = ({ label, value, color, tone, segmented }) => {
+  const fillClass = tone
+    ? `bg-gradient-to-r ${toneClasses[tone].fill}`
+    : (color || 'bg-[var(--theme-primary,#F0F6F7)]');
+  return (
+    <div className="w-full">
+      <div className="flex justify-between items-center mb-1.5 px-1">
+        <span className="font-mono text-[10px] font-medium uppercase tracking-label text-[var(--theme-text-subtle,#747474)]">{label}</span>
+        <span className={`font-mono text-[11px] font-semibold ${tone ? toneClasses[tone].text : 'text-[var(--theme-text-muted,#919FA5)]'}`}>{value}%</span>
+      </div>
+      <div className="relative h-2 bg-[var(--theme-border,#2a2a2a)] rounded-sm overflow-hidden">
+        <div
+          className={`h-full ${fillClass} transition-all duration-700`}
+          style={{ width: `${value}%` }}
+        ></div>
+        {segmented && (
+          <div
+            className="pointer-events-none absolute inset-0"
+            style={{ backgroundImage: 'repeating-linear-gradient(90deg, transparent 0, transparent 9px, var(--theme-bg-alt,#111111) 9px, var(--theme-bg-alt,#111111) 10px)' }}
+          />
+        )}
+      </div>
+    </div>
+  );
+};
 
 export const TagPill: React.FC<{ children: string, variant?: 'cyan' | 'pink' }> = ({ children, variant = 'cyan' }) => (
   <span className={`px-2.5 py-1 font-mono text-[9px] font-medium rounded border uppercase tracking-wide ${
