@@ -713,6 +713,17 @@ const App: React.FC = () => {
     setOnboardingGroup(null);
   };
 
+  const exitOnboarding = () => {
+    setIsOnboarding(false);
+    setOnboardingStep(0);
+    setChatHistory([]);
+    setUserInput('');
+    setUploadedImage(null);
+    setOnboardingGroup(null);
+    setIsProcessing(false);
+    setState(prev => ({ ...prev, currentTab: 'dex' }));
+  };
+
   const handleOnboardingChat = async () => {
     if (onboardingStep === 0 && !uploadedImage) return;
     if (!userInput.trim() || isProcessing) return;
@@ -781,6 +792,7 @@ const App: React.FC = () => {
       }, 1000);
     } else {
       try {
+        setChatHistory(prev => [...prev, { role: 'Cupid', text: 'Building their profile and 16-bit avatar... this can take 20-40 seconds.' }]);
         const profile = await ai.synthesizeProfile(newHistory, groupKey);
         if (profile && authUser) {
           // Generate partner ID first so we can use it for sprite upload
@@ -852,6 +864,7 @@ const App: React.FC = () => {
 
           // Save to Supabase
           try {
+            setChatHistory(prev => [...prev, { role: 'Cupid', text: 'Saving to your dex...' }]);
             const insertedId = await createPartner(authUser.uid, newPartner);
             // Use the DB-generated UUID so subsequent updates/deletes hit the right row.
             const persistedPartner: Partner = { ...newPartner, id: insertedId };
@@ -860,14 +873,14 @@ const App: React.FC = () => {
             setOnboardingStep(0);
           } catch (error) {
             console.error('Failed to create partner:', error);
-            setChatHistory(prev => [...prev, { role: 'Cupid', text: 'Could not save profile. Try again in a moment.' }]);
+            setChatHistory(prev => [...prev, { role: 'Cupid', text: 'Could not save profile. Tap the X in the header to exit, or try again.' }]);
           }
         } else {
-          setChatHistory(prev => [...prev, { role: 'Cupid', text: 'AI could not build the profile. Try again.' }]);
+          setChatHistory(prev => [...prev, { role: 'Cupid', text: 'AI could not build the profile. Tap the X in the header to exit, or try again.' }]);
         }
       } catch (error) {
         console.error('Onboarding generation failed:', error);
-        setChatHistory(prev => [...prev, { role: 'Cupid', text: 'Generation failed. I saved your answers—try submit once more.' }]);
+        setChatHistory(prev => [...prev, { role: 'Cupid', text: 'Generation failed. Tap the X in the header to exit, or try submit once more.' }]);
       } finally {
         setIsProcessing(false);
       }
@@ -1089,7 +1102,7 @@ const App: React.FC = () => {
         </div>
         <div className="mt-0 md:mt-auto flex md:flex-col flex-row gap-1 md:gap-4 mr-2 md:mr-0">
           <div data-tutorial="new-button">
-            <NavIcon icon={<Plus size={18}/>} active={isOnboarding} onClick={startOnboarding} label="NEW" />
+            <NavIcon icon={<Plus size={18}/>} active={isOnboarding} onClick={() => { if (isOnboarding) { exitOnboarding(); } else { startOnboarding(); } }} label="NEW" />
           </div>
           <NavIcon icon={<Power size={18}/>} onClick={async () => {
             try {
@@ -1126,6 +1139,25 @@ const App: React.FC = () => {
               </div>
               <button onClick={() => setState(s => ({...s, showPRD: true}))} className="p-1.5 hover:bg-[var(--theme-surface,#141414)] rounded transition-colors text-[var(--theme-text-subtle,#747474)] hover:text-[var(--theme-text,#F0F6F7)]"><SettingsIcon size={16} /></button>
             </div>
+          )}
+          {isOnboarding && (
+            <button
+              onClick={() => {
+                if (chatHistory.length > 1) {
+                  if (window.confirm('Exit onboarding? Your progress will be lost.')) {
+                    exitOnboarding();
+                  }
+                } else {
+                  exitOnboarding();
+                }
+              }}
+              aria-label="Exit onboarding"
+              style={{ touchAction: 'manipulation' }}
+              className="min-w-[44px] min-h-[44px] flex items-center justify-center gap-1.5 rounded text-[var(--theme-text-subtle,#747474)] hover:text-[var(--theme-text,#F0F6F7)] hover:bg-[var(--theme-surface,#141414)] transition-colors"
+            >
+              <X size={20} />
+              <span className="hidden md:inline font-mono text-[10px] uppercase tracking-wide">Exit</span>
+            </button>
           )}
         </header>
 
