@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { signIn, signUp } from '../services/authService';
+import { HrtlessLogo } from './RetroUI';
 
 interface AuthUIProps {
   onAuthSuccess: () => void;
@@ -54,10 +55,8 @@ export const AuthUI: React.FC<AuthUIProps> = ({ onAuthSuccess }) => {
         {/* Auth card */}
         <div className="bg-[var(--theme-bg-alt,#111111)] border border-[var(--theme-border,#2a2a2a)] rounded-lg p-6">
           {/* Header */}
-          <div className="text-center mb-6">
-            <h1 className="text-xl font-semibold text-[var(--theme-text,#F0F6F7)] mb-1 tracking-tight">
-              Heartless
-            </h1>
+          <div className="text-center mb-6 flex flex-col items-center">
+            <HrtlessLogo size={34} className="mb-2" />
             <p className="font-mono text-[10px] text-[var(--theme-text-subtle,#747474)] uppercase tracking-wide">
               Partner Dex System
             </p>

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { Heart, Plus, Power, MessageSquare, Camera, User, History, Activity, ShieldAlert, BookOpen, Settings as SettingsIcon, Image as ImageIcon, CheckCircle2, ArrowRight, X, ThumbsUp, ThumbsDown, Sparkles, AlertCircle, Send, Zap, Shield, Target, Award, Brain, Star, MapPin, CheckSquare, Square, Clock, TrendingUp, Info, Save, Edit2, Trash2, PlusCircle, Archive } from 'lucide-react';
 import { Partner, RelationshipType, InteractionLog, AppState, LogType, Trait, Preference, AuthUser } from './types';
 import { INITIAL_PARTNERS } from './constants';
-import { PixelButton as ModernButton, CompassionMeter, StatBar, TagPill, RadarChart, Modal, PokedexScreen, PokedexLED, TabHeader } from './components/RetroUI';
+import { PixelButton as ModernButton, CompassionMeter, StatBar, TagPill, RadarChart, Modal, PokedexScreen, PokedexLED, TabHeader, HrtlessLogo } from './components/RetroUI';
 import { PRDView } from './components/PRDView';
 import { HeartlessAIService } from './services/geminiService';
 import { onAuthStateChange, signOut as firebaseSignOut, deleteAccount as deleteFirebaseAccount } from './services/authService';
@@ -1784,25 +1784,9 @@ const App: React.FC = () => {
 
                 {state.currentTab === 'history' && (
                   <div className="space-y-3">
-                    {/* Heartless · HRTLES brand strip */}
-                    <div className="flex items-center justify-between gap-3 px-3 py-2 rounded border-2 border-red-400/30 bg-gradient-to-r from-red-500/10 via-red-400/5 to-transparent">
-                      <div className="flex items-center gap-2 min-w-0">
-                        <Heart size={16} className="text-red-400 fill-red-400 shrink-0" />
-                        <div className="min-w-0">
-                          <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-red-300 leading-none">Heartless</div>
-                          <div className="font-mono text-[9px] uppercase tracking-[0.3em] text-red-400/70 leading-none mt-1">HRTLES</div>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-1 shrink-0" aria-label="heartless hearts row">
-                        {[0,1,2,3,4,5,6].map(i => (
-                          <Heart
-                            key={i}
-                            size={11}
-                            className="text-red-400 fill-red-400 drop-shadow-[0_0_3px_rgba(248,113,113,0.6)] animate-pulse"
-                            style={{ animationDelay: `${i * 120}ms` }}
-                          />
-                        ))}
-                      </div>
+                    {/* HRTLESS brand strip */}
+                    <div className="flex items-center justify-center gap-3 px-3 py-3 rounded border-2 border-red-400/30 bg-gradient-to-r from-red-500/10 via-red-400/10 to-red-500/10">
+                      <HrtlessLogo size={26} />
                     </div>
                     <TabHeader tone="red" title="Incident Log" counter={`${selectedPartner.interactionLog.length} ENTRIES`} icon={<History size={14} />} />
                     {selectedPartner.interactionLog.map(l => (

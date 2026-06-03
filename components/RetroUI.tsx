@@ -1,5 +1,50 @@
 import React from 'react';
 
+// HrtlessLogo: spells "HRTLESS" with each letter inside its own heart.
+// `size` controls heart height in px; letters scale with it.
+export const HrtlessLogo: React.FC<{
+  size?: number;
+  className?: string;
+  letterClassName?: string;
+  heartClassName?: string;
+}> = ({ size = 28, className = '', letterClassName = '', heartClassName = '' }) => {
+  const letters = ['H', 'R', 'T', 'L', 'E', 'S', 'S'];
+  return (
+    <div className={`inline-flex items-center gap-1 ${className}`} aria-label="HRTLESS">
+      {letters.map((ch, i) => (
+        <span
+          key={i}
+          className="relative inline-flex items-center justify-center"
+          style={{ width: size, height: size, animation: `hrtlessPulse 1.6s ease-in-out ${i * 120}ms infinite` }}
+        >
+          <svg
+            viewBox="0 0 24 24"
+            width={size}
+            height={size}
+            className={`absolute inset-0 drop-shadow-[0_0_4px_rgba(248,113,113,0.7)] ${heartClassName}`}
+            aria-hidden="true"
+          >
+            <path
+              d="M12 21s-7.5-4.5-9.5-9.2C1 8.5 3 5 6.5 5c2 0 3.5 1.1 4.4 2.5h.2C12 6.1 13.5 5 15.5 5 19 5 21 8.5 19.5 11.8 17.5 16.5 12 21 12 21z"
+              fill="#ef4444"
+              stroke="#fca5a5"
+              strokeWidth="0.6"
+            />
+          </svg>
+          <span
+            className={`relative font-bold text-white select-none ${letterClassName}`}
+            style={{ fontSize: size * 0.42, lineHeight: 1, marginTop: size * 0.05, textShadow: '0 1px 2px rgba(0,0,0,0.6)', fontFamily: 'JetBrains Mono, monospace', letterSpacing: '-0.02em' }}
+          >
+            {ch}
+          </span>
+        </span>
+      ))}
+      <style>{`@keyframes hrtlessPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.06); } }`}</style>
+    </div>
+  );
+};
+
+
 export const PixelButton: React.FC<{
   onClick?: () => void,
   children: React.ReactNode,
