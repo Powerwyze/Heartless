@@ -1784,6 +1784,26 @@ const App: React.FC = () => {
 
                 {state.currentTab === 'history' && (
                   <div className="space-y-3">
+                    {/* Heartless · HRTLES brand strip */}
+                    <div className="flex items-center justify-between gap-3 px-3 py-2 rounded border-2 border-red-400/30 bg-gradient-to-r from-red-500/10 via-red-400/5 to-transparent">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <Heart size={16} className="text-red-400 fill-red-400 shrink-0" />
+                        <div className="min-w-0">
+                          <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-red-300 leading-none">Heartless</div>
+                          <div className="font-mono text-[9px] uppercase tracking-[0.3em] text-red-400/70 leading-none mt-1">HRTLES</div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1 shrink-0" aria-label="heartless hearts row">
+                        {[0,1,2,3,4,5,6].map(i => (
+                          <Heart
+                            key={i}
+                            size={11}
+                            className="text-red-400 fill-red-400 drop-shadow-[0_0_3px_rgba(248,113,113,0.6)] animate-pulse"
+                            style={{ animationDelay: `${i * 120}ms` }}
+                          />
+                        ))}
+                      </div>
+                    </div>
                     <TabHeader tone="red" title="Incident Log" counter={`${selectedPartner.interactionLog.length} ENTRIES`} icon={<History size={14} />} />
                     {selectedPartner.interactionLog.map(l => (
                       <div key={l.id} className={`glass p-4 flex justify-between items-center gap-3 hover:bg-[var(--theme-bg-alt,#111111)] transition-colors border-l-4 ${l.type === LogType.NEGATIVE ? 'border-l-red-400/60' : l.type === LogType.POSITIVE ? 'border-l-green-400/60' : 'border-l-[var(--theme-border,#2a2a2a)]'}`}>
