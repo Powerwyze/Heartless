@@ -1,7 +1,7 @@
 import React from 'react';
 
-// HrtlessLogo: spells "HRTLESS" with each letter inside its own heart.
-// `size` controls heart height in px; letters scale with it.
+// HrtlessLogo: spells "HRTLESS" with each letter inside its own 16-bit pixel heart.
+// `size` controls overall heart height in px; letters scale with it.
 export const HrtlessLogo: React.FC<{
   size?: number;
   className?: string;
@@ -9,37 +9,74 @@ export const HrtlessLogo: React.FC<{
   heartClassName?: string;
 }> = ({ size = 28, className = '', letterClassName = '', heartClassName = '' }) => {
   const letters = ['H', 'R', 'T', 'L', 'E', 'S', 'S'];
+
+  // 14×12 pixel heart sprite.
+  // 0 = transparent, 1 = outline (dark), 2 = shadow, 3 = base, 4 = highlight
+  const GRID: number[][] = [
+    [0,0,1,1,1,0,0,0,1,1,1,0,0,0],
+    [0,1,4,4,3,1,0,1,3,3,3,1,0,0],
+    [1,4,4,4,3,3,1,3,3,3,2,2,1,0],
+    [1,4,4,3,3,3,3,3,3,3,2,2,2,1],
+    [1,4,3,3,3,3,3,3,3,3,2,2,2,1],
+    [1,3,3,3,3,3,3,3,3,3,2,2,2,1],
+    [0,1,3,3,3,3,3,3,3,3,2,2,1,0],
+    [0,0,1,3,3,3,3,3,3,3,2,1,0,0],
+    [0,0,0,1,3,3,3,3,3,3,1,0,0,0],
+    [0,0,0,0,1,3,3,3,3,1,0,0,0,0],
+    [0,0,0,0,0,1,3,3,1,0,0,0,0,0],
+    [0,0,0,0,0,0,1,1,0,0,0,0,0,0],
+  ];
+  const COLS = GRID[0].length;
+  const ROWS = GRID.length;
+  const COLORS: Record<number, string> = {
+    1: '#3a0a0a', // outline (very dark red/black)
+    2: '#8b0d1a', // shadow
+    3: '#e63946', // base red
+    4: '#ff8a95', // highlight pink
+  };
+
   return (
-    <div className={`inline-flex items-center gap-1 ${className}`} aria-label="HRTLESS">
+    <div className={`inline-flex items-center gap-1 ${className}`} aria-label="HRTLESS" style={{ imageRendering: 'pixelated' }}>
       {letters.map((ch, i) => (
         <span
           key={i}
           className="relative inline-flex items-center justify-center"
-          style={{ width: size, height: size, animation: `hrtlessPulse 1.6s ease-in-out ${i * 120}ms infinite` }}
+          style={{ width: size, height: size, animation: `hrtlessPulse 1.6s steps(1, end) ${i * 120}ms infinite` }}
         >
           <svg
-            viewBox="0 0 24 24"
+            viewBox={`0 0 ${COLS} ${ROWS}`}
             width={size}
             height={size}
-            className={`absolute inset-0 drop-shadow-[0_0_4px_rgba(248,113,113,0.7)] ${heartClassName}`}
+            preserveAspectRatio="xMidYMid meet"
+            shapeRendering="crispEdges"
+            className={`absolute inset-0 drop-shadow-[0_0_3px_rgba(230,57,70,0.7)] ${heartClassName}`}
             aria-hidden="true"
+            style={{ imageRendering: 'pixelated' }}
           >
-            <path
-              d="M12 21s-7.5-4.5-9.5-9.2C1 8.5 3 5 6.5 5c2 0 3.5 1.1 4.4 2.5h.2C12 6.1 13.5 5 15.5 5 19 5 21 8.5 19.5 11.8 17.5 16.5 12 21 12 21z"
-              fill="#ef4444"
-              stroke="#fca5a5"
-              strokeWidth="0.6"
-            />
+            {GRID.map((row, y) =>
+              row.map((v, x) =>
+                v === 0 ? null : (
+                  <rect key={`${x}-${y}`} x={x} y={y} width={1.02} height={1.02} fill={COLORS[v]} />
+                )
+              )
+            )}
           </svg>
           <span
             className={`relative font-bold text-white select-none ${letterClassName}`}
-            style={{ fontSize: size * 0.42, lineHeight: 1, marginTop: size * 0.05, textShadow: '0 1px 2px rgba(0,0,0,0.6)', fontFamily: 'JetBrains Mono, monospace', letterSpacing: '-0.02em' }}
+            style={{
+              fontSize: size * 0.38,
+              lineHeight: 1,
+              marginTop: size * 0.02,
+              textShadow: '0 1px 0 rgba(0,0,0,0.85), 1px 0 0 rgba(0,0,0,0.4)',
+              fontFamily: '"Press Start 2P", "JetBrains Mono", monospace',
+              letterSpacing: '-0.02em',
+            }}
           >
             {ch}
           </span>
         </span>
       ))}
-      <style>{`@keyframes hrtlessPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.06); } }`}</style>
+      <style>{`@keyframes hrtlessPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.12); } }`}</style>
     </div>
   );
 };
