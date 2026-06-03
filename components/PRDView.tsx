@@ -1,16 +1,22 @@
 import React from 'react';
 import { PixelButton } from './RetroUI';
 
-export const PRDView: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+export const PRDView: React.FC<{ onClose: () => void; isFirstTime?: boolean; onStart?: () => void }> = ({ onClose, isFirstTime, onStart }) => {
+  const handlePrimary = () => {
+    onClose();
+    if (isFirstTime && onStart) onStart();
+  };
   return (
     <div className="fixed inset-0 z-[200] bg-[var(--theme-bg,#0a0a0a)] overflow-y-auto p-4 md:p-6 text-sm text-[var(--theme-text-muted,#919FA5)]">
-      <div className="max-w-2xl mx-auto space-y-8 pb-24">
-        <div className="flex justify-between items-center sticky top-0 bg-[var(--theme-bg,#0a0a0a)] py-3 z-10 border-b border-[var(--theme-border,#2a2a2a)]">
-          <div className="flex items-center gap-3">
-            <div className="w-2 h-2 bg-[var(--theme-primary,#F0F6F7)] rounded-full"></div>
-            <h1 className="font-mono text-sm text-[var(--theme-text,#F0F6F7)] uppercase tracking-wide">User Guide</h1>
+      <div className="max-w-2xl mx-auto space-y-8 pb-32">
+        <div className="flex justify-between items-center sticky top-0 bg-[var(--theme-bg,#0a0a0a)] py-3 z-10 border-b border-[var(--theme-border,#2a2a2a)] gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-2 h-2 bg-[var(--theme-primary,#F0F6F7)] rounded-full shrink-0"></div>
+            <h1 className="font-mono text-sm text-[var(--theme-text,#F0F6F7)] uppercase tracking-wide truncate">User Guide</h1>
           </div>
-          <PixelButton onClick={onClose} variant="secondary">Close</PixelButton>
+          <PixelButton onClick={handlePrimary} variant={isFirstTime ? 'primary' : 'secondary'} className="shrink-0">
+            {isFirstTime ? 'Add First Partner' : 'Close'}
+          </PixelButton>
         </div>
 
         <section className="space-y-3">

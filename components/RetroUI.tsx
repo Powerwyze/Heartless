@@ -17,7 +17,8 @@ export const PixelButton: React.FC<{
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`px-5 py-2 rounded font-medium transition-colors duration-200 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed ${styles[variant]} ${className}`}
+      style={{ touchAction: 'manipulation' }}
+      className={`px-5 py-3 md:py-2 min-h-[44px] md:min-h-0 rounded font-medium text-sm transition-colors duration-200 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed ${styles[variant]} ${className}`}
     >
       {children}
     </button>

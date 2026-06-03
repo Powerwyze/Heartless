@@ -436,13 +436,13 @@ const App: React.FC = () => {
           isLoadingPartners: false,
         }));
 
-        // Decide which onboarding moment to show. The welcome popup is shown
-        // deterministically whenever the user has zero partners (no localStorage
-        // gate), so it reliably reappears on every fresh load until they add one.
+        // Decide which onboarding moment to show. For zero-partner users, auto-open
+        // the full User Guide (PRDView) — it's the clearest first-time experience.
+        // For users with partners who haven't seen the tutorial, show the tutorial.
         const hasSeenTutorial = localStorage.getItem('heartless_tutorial_completed');
         if (partners.length === 0) {
           setTimeout(() => {
-            setShowWelcome(true);
+            setState(prev => ({ ...prev, showPRD: true }));
           }, 500);
         } else if (!hasSeenTutorial) {
           // Show tutorial after a short delay
@@ -1817,7 +1817,13 @@ const App: React.FC = () => {
         </div>
       </Modal>
 
-      {state.showPRD && <PRDView onClose={() => setState(s => ({ ...s, showPRD: false }))} />}
+      {state.showPRD && (
+        <PRDView
+          onClose={() => setState(s => ({ ...s, showPRD: false }))}
+          isFirstTime={state.partners.length === 0}
+          onStart={startOnboarding}
+        />
+      )}
 
       {/* Welcome Popup (first-time, empty dex) */}
       <WelcomeModal
