@@ -73,7 +73,7 @@ export const AuthUI: React.FC<AuthUIProps> = ({ onAuthSuccess }) => {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-3 py-2 bg-[var(--theme-surface,#141414)] border border-[var(--theme-border,#2a2a2a)] rounded text-sm text-[var(--theme-text,#F0F6F7)] focus:outline-none focus:border-[var(--theme-border-hover,#3a3a3a)] transition-colors"
+                className="w-full px-3 py-2.5 bg-[var(--theme-surface,#141414)] border border-[var(--theme-border,#2a2a2a)] rounded text-base md:text-sm text-[var(--theme-text,#F0F6F7)] focus:outline-none focus:border-[var(--theme-border-hover,#3a3a3a)] transition-colors"
                 disabled={isLoading}
               />
             </div>
@@ -86,7 +86,7 @@ export const AuthUI: React.FC<AuthUIProps> = ({ onAuthSuccess }) => {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-3 py-2 bg-[var(--theme-surface,#141414)] border border-[var(--theme-border,#2a2a2a)] rounded text-sm text-[var(--theme-text,#F0F6F7)] focus:outline-none focus:border-[var(--theme-border-hover,#3a3a3a)] transition-colors"
+                className="w-full px-3 py-2.5 bg-[var(--theme-surface,#141414)] border border-[var(--theme-border,#2a2a2a)] rounded text-base md:text-sm text-[var(--theme-text,#F0F6F7)] focus:outline-none focus:border-[var(--theme-border-hover,#3a3a3a)] transition-colors"
                 disabled={isLoading}
               />
             </div>
@@ -100,7 +100,7 @@ export const AuthUI: React.FC<AuthUIProps> = ({ onAuthSuccess }) => {
                   type="password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full px-3 py-2 bg-[var(--theme-surface,#141414)] border border-[var(--theme-border,#2a2a2a)] rounded text-sm text-[var(--theme-text,#F0F6F7)] focus:outline-none focus:border-[var(--theme-border-hover,#3a3a3a)] transition-colors"
+                  className="w-full px-3 py-2.5 bg-[var(--theme-surface,#141414)] border border-[var(--theme-border,#2a2a2a)] rounded text-base md:text-sm text-[var(--theme-text,#F0F6F7)] focus:outline-none focus:border-[var(--theme-border-hover,#3a3a3a)] transition-colors"
                   disabled={isLoading}
                 />
               </div>
@@ -115,7 +115,8 @@ export const AuthUI: React.FC<AuthUIProps> = ({ onAuthSuccess }) => {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-2.5 bg-[var(--theme-surface,#141414)] text-[var(--theme-text,#F0F6F7)] font-mono text-xs uppercase tracking-wide hover:bg-[var(--theme-bg-alt,#111111)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors border border-[var(--theme-border,#2a2a2a)] hover:border-[var(--theme-border-hover,#3a3a3a)] rounded"
+              style={{ touchAction: 'manipulation' }}
+              className="w-full py-3 bg-[var(--theme-surface,#141414)] text-[var(--theme-text,#F0F6F7)] font-mono text-xs uppercase tracking-wide hover:bg-[var(--theme-bg-alt,#111111)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors border border-[var(--theme-border,#2a2a2a)] hover:border-[var(--theme-border-hover,#3a3a3a)] rounded"
             >
               {isLoading ? 'Loading...' : isSignUp ? 'Sign Up' : 'Log In'}
             </button>

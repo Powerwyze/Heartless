@@ -436,11 +436,11 @@ const App: React.FC = () => {
           isLoadingPartners: false,
         }));
 
-        // Decide which onboarding moment to show.
-        const hasSeenWelcome = localStorage.getItem('heartless_welcome_seen');
+        // Decide which onboarding moment to show. The welcome popup is shown
+        // deterministically whenever the user has zero partners (no localStorage
+        // gate), so it reliably reappears on every fresh load until they add one.
         const hasSeenTutorial = localStorage.getItem('heartless_tutorial_completed');
-        if (partners.length === 0 && !hasSeenWelcome) {
-          // Brand-new zero-partner user: show the welcome popup, suppress Tutorial.
+        if (partners.length === 0) {
           setTimeout(() => {
             setShowWelcome(true);
           }, 500);
@@ -1070,16 +1070,16 @@ const App: React.FC = () => {
   return (
     <div className="flex-1 flex flex-col md:flex-row overflow-hidden bg-[var(--theme-bg,#0a0a0a)]" style={themeVars}>
       {/* Sidebar */}
-      <div className="order-last md:order-first w-full md:w-20 flex md:flex-col flex-row items-center md:py-8 py-3 border-t md:border-t-0 md:border-r border-[var(--theme-border,#2a2a2a)] bg-[var(--theme-bg,#0a0a0a)] shrink-0 fixed md:static bottom-0 left-0 z-50">
+      <div className="order-last md:order-first w-full md:w-20 flex md:flex-col flex-row items-center md:py-8 py-2 border-t md:border-t-0 md:border-r border-[var(--theme-border,#2a2a2a)] bg-[var(--theme-bg,#0a0a0a)] shrink-0 fixed md:static bottom-0 left-0 right-0 md:right-auto z-50 pb-[env(safe-area-inset-bottom)] md:pb-8" style={{ touchAction: 'manipulation' }}>
         <button
-          className="w-9 h-9 md:w-10 md:h-10 flex items-center justify-center md:mb-8 mb-0 ml-4 md:ml-0 rounded border border-[var(--theme-border,#2a2a2a)] hover:border-[var(--theme-border-hover,#3a3a3a)] transition-colors"
+          className="w-11 h-11 md:w-10 md:h-10 flex items-center justify-center shrink-0 md:mb-8 mb-0 ml-2 md:ml-0 rounded border border-[var(--theme-border,#2a2a2a)] hover:border-[var(--theme-border-hover,#3a3a3a)] transition-colors"
           style={{ color: currentTheme.colors.primary }}
           onClick={() => setShowSettings(true)}
           aria-label="Open theme settings"
         >
           <Heart size={18} fill="currentColor" />
         </button>
-        <div className="flex-1 flex md:flex-col flex-row gap-2 md:gap-4 px-4 md:px-0 overflow-x-auto md:overflow-visible" data-tutorial="tabs">
+        <div className="flex-1 flex md:flex-col flex-row gap-1 md:gap-4 px-2 md:px-0 overflow-x-auto md:overflow-visible custom-scrollbar" data-tutorial="tabs">
           <NavIcon icon={<User size={18}/>} active={state.currentTab === 'dex'} onClick={() => setState(s => ({...s, currentTab: 'dex'}))} label="DEX" />
           <NavIcon icon={<Activity size={18}/>} active={state.currentTab === 'stats'} onClick={() => setState(s => ({...s, currentTab: 'stats'}))} label="STATS" />
           <NavIcon icon={<Sparkles size={18}/>} active={state.currentTab === 'compat'} onClick={() => setState(s => ({...s, currentTab: 'compat'}))} label="MATCH" />
@@ -1087,7 +1087,7 @@ const App: React.FC = () => {
           <NavIcon icon={<BookOpen size={18}/>} active={state.currentTab === 'lore'} onClick={() => setState(s => ({...s, currentTab: 'lore'}))} label="INTEL" />
           <NavIcon icon={<History size={18}/>} active={state.currentTab === 'history'} onClick={() => setState(s => ({...s, currentTab: 'history'}))} label="LOGS" />
         </div>
-        <div className="mt-0 md:mt-auto flex md:flex-col flex-row gap-2 md:gap-4 mr-4 md:mr-0">
+        <div className="mt-0 md:mt-auto flex md:flex-col flex-row gap-1 md:gap-4 mr-2 md:mr-0">
           <div data-tutorial="new-button">
             <NavIcon icon={<Plus size={18}/>} active={isOnboarding} onClick={startOnboarding} label="NEW" />
           </div>
@@ -1101,9 +1101,9 @@ const App: React.FC = () => {
         </div>
       </div>
 
-      <div className="flex-1 flex flex-col overflow-hidden min-h-0 pb-16 md:pb-0">
+      <div className="flex-1 flex flex-col overflow-hidden min-h-0 pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-0">
         {/* Header */}
-        <header className="h-auto md:h-16 flex flex-col md:flex-row md:items-center md:justify-between px-4 md:px-8 py-3 md:py-0 border-b border-[var(--theme-border,#2a2a2a)] bg-[var(--theme-bg-alt,#111111)] gap-3">
+        <header className="sticky top-0 z-30 md:static h-auto md:h-16 flex flex-col md:flex-row md:items-center md:justify-between px-4 md:px-8 py-3 md:py-0 border-b border-[var(--theme-border,#2a2a2a)] bg-[var(--theme-bg-alt,#111111)] gap-3">
           <div className="flex items-center gap-3 md:gap-4 flex-wrap">
             <h2 className="text-sm md:text-base font-semibold tracking-tight text-[var(--theme-text,#F0F6F7)]">
                {isOnboarding ? 'Onboarding Protocol' : (selectedPartner?.name || 'Database')}
@@ -1135,22 +1135,22 @@ const App: React.FC = () => {
               <div className="flex-1 overflow-y-auto space-y-4 pr-0 md:pr-4 custom-scrollbar">
                 {chatHistory.map((msg, i) => (
                   <div key={i} className={`flex ${msg.role === 'Cupid' ? 'justify-start' : 'justify-end'}`}>
-                    <div className={`max-w-[80%] p-4 ${msg.role === 'Cupid' ? 'chat-bubble-cupid' : 'chat-bubble-user'}`}>
+                    <div className={`max-w-[85%] p-4 ${msg.role === 'Cupid' ? 'chat-bubble-cupid' : 'chat-bubble-user'}`}>
                       <div className="font-mono text-[9px] uppercase tracking-wide mb-2 text-[var(--theme-text-subtle,#747474)]">{msg.role}</div>
-                      <p className="text-sm leading-relaxed text-[var(--theme-text,#F0F6F7)]">{msg.text}</p>
+                      <p className="text-base md:text-sm leading-relaxed break-words text-[var(--theme-text,#F0F6F7)]">{msg.text}</p>
                     </div>
                   </div>
                 ))}
                 {isProcessing && <div className="chat-bubble-cupid p-4 w-16 ml-2"><div className="w-2 h-2 rounded-full bg-[var(--theme-text-subtle,#747474)] animate-pulse" /></div>}
                 <div ref={chatBottomRef} />
               </div>
-              <div className="mt-4 md:mt-6 flex gap-3 p-3 bg-[var(--theme-surface,#141414)] rounded border border-[var(--theme-border,#2a2a2a)] items-center">
+              <div className="sticky bottom-0 mt-4 md:mt-6 flex gap-2 md:gap-3 p-3 bg-[var(--theme-surface,#141414)] rounded border border-[var(--theme-border,#2a2a2a)] items-center">
                 {onboardingStep <= 1 && (
                   <button onClick={() => fileInputRef.current?.click()} className={`p-3 rounded transition-colors shrink-0 border ${uploadedImage ? 'bg-green-950/30 text-green-400 border-green-900/50' : 'bg-[var(--theme-bg-alt,#111111)] text-[var(--theme-text-muted,#919FA5)] border-[var(--theme-border,#2a2a2a)] hover:border-[var(--theme-border-hover,#3a3a3a)]'}`}>
                     {uploadedImage ? <CheckCircle2 size={20} /> : <Camera size={20} />}
                   </button>
                 )}
-                <input className="flex-1 bg-transparent px-3 text-[var(--theme-text,#F0F6F7)] outline-none placeholder:text-[var(--theme-text-subtle,#747474)] text-sm" value={userInput} onChange={e => setUserInput(e.target.value)} onKeyPress={e => e.key === 'Enter' && handleOnboardingChat()} placeholder={onboardingStep === 0 ? "Upload evidence first..." : "Enter response..."} disabled={onboardingStep === 0 && !uploadedImage} />
+                <input className="flex-1 min-w-0 bg-transparent px-3 text-[var(--theme-text,#F0F6F7)] outline-none placeholder:text-[var(--theme-text-subtle,#747474)] text-base md:text-sm" value={userInput} onChange={e => setUserInput(e.target.value)} onKeyPress={e => e.key === 'Enter' && handleOnboardingChat()} placeholder={onboardingStep === 0 ? "Upload evidence first..." : "Enter response..."} disabled={onboardingStep === 0 && !uploadedImage} />
                 <button onClick={handleOnboardingChat} disabled={onboardingStep === 0 && !uploadedImage} className="bg-[var(--theme-surface,#141414)] hover:bg-[var(--theme-bg-alt,#111111)] text-[var(--theme-text,#F0F6F7)] p-2.5 rounded border border-[var(--theme-border,#2a2a2a)] hover:border-[var(--theme-border-hover,#3a3a3a)] transition-colors disabled:opacity-30"><ArrowRight size={20} /></button>
               </div>
               <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageUpload} />
@@ -1178,19 +1178,20 @@ const App: React.FC = () => {
                   <div className="mt-6 text-center z-10 w-full space-y-3">
                     {isEditing ? (
                       <input
-                        className="text-lg font-semibold tracking-tight bg-[var(--theme-bg-alt,#111111)] border border-[var(--theme-border,#2a2a2a)] rounded px-3 py-1.5 w-full text-center text-[var(--theme-text,#F0F6F7)] outline-none focus:border-[var(--theme-border-hover,#3a3a3a)]"
+                        className="text-lg font-semibold tracking-tight bg-[var(--theme-bg-alt,#111111)] border border-[var(--theme-border,#2a2a2a)] rounded px-3 py-2 w-full text-center text-[var(--theme-text,#F0F6F7)] outline-none focus:border-[var(--theme-border-hover,#3a3a3a)]"
                         value={selectedPartner.name}
                         onChange={(e) => updatePartner({ name: e.target.value })}
                       />
                     ) : (
-                      <div className={`text-lg font-semibold tracking-tight transition-colors ${isTerminated ? 'text-red-400 line-through' : 'text-[var(--theme-text,#F0F6F7)]'}`}>{selectedPartner.name}</div>
+                      <div className={`text-xl md:text-lg font-semibold tracking-tight break-words transition-colors ${isTerminated ? 'text-red-400 line-through' : 'text-[var(--theme-text,#F0F6F7)]'}`}>{selectedPartner.name}</div>
                     )}
                     <div className="flex justify-center"><CompassionMeter current={selectedPartner.currentCompassion} max={selectedPartner.totalCompassion} big /></div>
                     <button
                       onClick={handleRemovePartner}
-                      className="w-full mt-2 inline-flex items-center justify-center gap-2 rounded border border-red-900/50 text-red-400 text-[10px] font-mono uppercase tracking-wide py-2 transition-colors hover:border-red-700 hover:text-red-300 hover:bg-red-950/30"
+                      style={{ touchAction: 'manipulation' }}
+                      className="w-full mt-2 inline-flex items-center justify-center gap-2 rounded border border-red-900/50 text-red-400 text-xs md:text-[10px] font-mono uppercase tracking-wide py-3 md:py-2 transition-colors hover:border-red-700 hover:text-red-300 hover:bg-red-950/30"
                     >
-                      <Trash2 size={12} /> Remove Partner
+                      <Trash2 size={14} /> Remove Partner
                     </button>
                   </div>
                 </div>
@@ -1213,7 +1214,7 @@ const App: React.FC = () => {
                       onChange={(e) => updatePartner({ flavorText: e.target.value })}
                     />
                   ) : (
-                    <p className={`text-xs leading-relaxed ${isTerminated ? 'text-red-300' : 'text-[var(--theme-text-muted,#919FA5)]'}`}>
+                    <p className={`text-sm md:text-xs leading-relaxed break-words ${isTerminated ? 'text-red-300' : 'text-[var(--theme-text-muted,#919FA5)]'}`}>
                       {isTerminated ? terminationMessage : `"${selectedPartner.flavorText}"`}
                     </p>
                   )}
@@ -1300,7 +1301,7 @@ const App: React.FC = () => {
                             )}
                           </div>
                           <div className="space-y-3 p-4 bg-[var(--theme-bg-alt,#111111)] rounded border border-[var(--theme-border,#2a2a2a)]">
-                             <input className="w-full bg-transparent px-2 py-1.5 text-sm text-[var(--theme-text,#F0F6F7)] outline-none placeholder:text-[var(--theme-text-subtle,#747474)] border-b border-[var(--theme-border,#2a2a2a)] focus:border-[var(--theme-border-hover,#3a3a3a)]" value={manualLogDesc} onChange={e => setManualLogDesc(e.target.value)} placeholder="Enter interaction summary..." />
+                             <input className="w-full bg-transparent px-2 py-2 text-base md:text-sm text-[var(--theme-text,#F0F6F7)] outline-none placeholder:text-[var(--theme-text-subtle,#747474)] border-b border-[var(--theme-border,#2a2a2a)] focus:border-[var(--theme-border-hover,#3a3a3a)]" value={manualLogDesc} onChange={e => setManualLogDesc(e.target.value)} placeholder="Enter interaction summary..." />
                              <div className="flex gap-3">
                                <button onClick={() => logEvent(-1, manualLogDesc || "Damage reported")} disabled={!manualLogDesc.trim()} className="flex-1 bg-transparent hover:bg-red-950/30 text-red-400 py-2 rounded font-mono text-[10px] uppercase border border-red-900/50 hover:border-red-700 transition-colors disabled:opacity-30">Damage</button>
                                <button onClick={() => logEvent(1, manualLogDesc || "Growth reported")} disabled={!manualLogDesc.trim()} className="flex-1 bg-transparent hover:bg-green-950/30 text-green-400 py-2 rounded font-mono text-[10px] uppercase border border-green-900/50 hover:border-green-700 transition-colors disabled:opacity-30">Growth</button>
@@ -1727,15 +1728,15 @@ const App: React.FC = () => {
                 {state.currentTab === 'history' && (
                   <div className="space-y-3">
                     {selectedPartner.interactionLog.map(l => (
-                      <div key={l.id} className="glass p-4 flex justify-between items-center hover:bg-[var(--theme-bg-alt,#111111)] transition-colors">
-                        <div className="flex items-center gap-4">
-                          <div className={`w-1.5 h-1.5 rounded-full ${l.type === LogType.NEGATIVE ? 'bg-red-400' : l.type === LogType.POSITIVE ? 'bg-green-400' : 'bg-[var(--theme-text-subtle,#747474)]'}`}></div>
-                          <div>
-                            <p className="text-sm text-[var(--theme-text,#F0F6F7)] leading-relaxed">{l.description}</p>
+                      <div key={l.id} className="glass p-4 flex justify-between items-center gap-3 hover:bg-[var(--theme-bg-alt,#111111)] transition-colors">
+                        <div className="flex items-start gap-3 md:gap-4 min-w-0">
+                          <div className={`mt-1.5 shrink-0 w-1.5 h-1.5 rounded-full ${l.type === LogType.NEGATIVE ? 'bg-red-400' : l.type === LogType.POSITIVE ? 'bg-green-400' : 'bg-[var(--theme-text-subtle,#747474)]'}`}></div>
+                          <div className="min-w-0">
+                            <p className="text-sm text-[var(--theme-text,#F0F6F7)] leading-relaxed break-words">{l.description}</p>
                             <p className="font-mono text-[9px] text-[var(--theme-text-subtle,#747474)] mt-1">{new Date(l.timestamp).toLocaleString()}</p>
                           </div>
                         </div>
-                        <div className="font-mono text-xs text-[var(--theme-text-subtle,#747474)]">{l.compassionDelta > 0 ? '+' : ''}{l.compassionDelta}</div>
+                        <div className="font-mono text-xs text-[var(--theme-text-subtle,#747474)] shrink-0">{l.compassionDelta > 0 ? '+' : ''}{l.compassionDelta}</div>
                       </div>
                     ))}
                   </div>
@@ -1777,8 +1778,8 @@ const App: React.FC = () => {
           </div>
           {!verdict && (
             <div className="mt-4 flex gap-2">
-              <input className="flex-1 bg-[var(--theme-surface,#141414)] rounded px-3 text-sm text-[var(--theme-text,#F0F6F7)] outline-none border border-[var(--theme-border,#2a2a2a)] focus:border-[var(--theme-border-hover,#3a3a3a)] h-10" value={userInput} onChange={e => setUserInput(e.target.value)} onKeyPress={e => e.key === 'Enter' && handleEmotionalUpdateChat()} placeholder="Share your thoughts..." />
-              <button onClick={handleEmotionalUpdateChat} className="bg-[var(--theme-surface,#141414)] text-[var(--theme-text,#F0F6F7)] w-10 h-10 flex items-center justify-center rounded border border-[var(--theme-border,#2a2a2a)] hover:border-[var(--theme-border-hover,#3a3a3a)] transition-colors"><Send size={16} /></button>
+              <input className="flex-1 min-w-0 bg-[var(--theme-surface,#141414)] rounded px-3 text-base md:text-sm text-[var(--theme-text,#F0F6F7)] outline-none border border-[var(--theme-border,#2a2a2a)] focus:border-[var(--theme-border-hover,#3a3a3a)] h-11 md:h-10" value={userInput} onChange={e => setUserInput(e.target.value)} onKeyPress={e => e.key === 'Enter' && handleEmotionalUpdateChat()} placeholder="Share your thoughts..." />
+              <button onClick={handleEmotionalUpdateChat} className="bg-[var(--theme-surface,#141414)] text-[var(--theme-text,#F0F6F7)] w-11 h-11 md:w-10 md:h-10 shrink-0 flex items-center justify-center rounded border border-[var(--theme-border,#2a2a2a)] hover:border-[var(--theme-border-hover,#3a3a3a)] transition-colors"><Send size={16} /></button>
             </div>
           )}
         </div>
@@ -1790,12 +1791,10 @@ const App: React.FC = () => {
       <WelcomeModal
         isOpen={showWelcome && !isOnboarding}
         onClose={() => {
-          localStorage.setItem('heartless_welcome_seen', 'true');
           localStorage.setItem('heartless_tutorial_completed', 'true');
           setShowWelcome(false);
         }}
         onStart={() => {
-          localStorage.setItem('heartless_welcome_seen', 'true');
           localStorage.setItem('heartless_tutorial_completed', 'true');
           setShowWelcome(false);
           startOnboarding();
@@ -1972,11 +1971,11 @@ const PreferenceListEditor: React.FC<{ label: string, items: Preference[], isEdi
 // --- Generic Components ---
 
 const NavIcon: React.FC<{ icon: React.ReactNode, active?: boolean, onClick: () => void, label: string, color?: string }> = ({ icon, active, onClick, label, color = "text-[var(--theme-text-muted,#919FA5)]" }) => (
-  <button onClick={onClick} className={`flex flex-col items-center gap-1.5 md:gap-2 group transition-colors duration-200 ${active ? '' : 'opacity-60 hover:opacity-100'}`}>
+  <button onClick={onClick} style={{ touchAction: 'manipulation' }} className={`flex flex-col items-center gap-1.5 md:gap-2 group transition-colors duration-200 shrink-0 ${active ? '' : 'opacity-60 hover:opacity-100'}`}>
     <div
-      className={`p-2.5 md:p-3 rounded border-2 transition-colors duration-200 ${
+      className={`min-w-[44px] min-h-[44px] md:min-w-0 md:min-h-0 flex items-center justify-center p-3 rounded border-2 transition-colors duration-200 ${
         active
-          ? 'bg-[var(--theme-surface,#141414)] border-[var(--theme-border-hover,#3a3a3a)] text-[var(--theme-primary,#F0F6F7)]'
+          ? 'bg-[var(--theme-surface,#141414)] border-[var(--theme-primary,#F0F6F7)] text-[var(--theme-primary,#F0F6F7)]'
           : `border-[var(--theme-border,#2a2a2a)] hover:border-[var(--theme-border-hover,#3a3a3a)] ${color}`
       }`}
     >

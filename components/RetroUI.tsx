@@ -27,7 +27,7 @@ export const PixelButton: React.FC<{
 export const CompassionMeter: React.FC<{ current: number, max: number, big?: boolean }> = ({ current, max, big }) => {
   const hearts = [];
   for (let i = 1; i <= max; i++) {
-    const size = big ? "w-5 h-5" : "w-3.5 h-3.5";
+    const size = big ? "w-7 h-7 md:w-5 md:h-5" : "w-4 h-4 md:w-3.5 md:h-3.5";
     const isActive = current >= i;
     const isHalf = !isActive && current >= i - 0.5;
 
@@ -41,7 +41,7 @@ export const CompassionMeter: React.FC<{ current: number, max: number, big?: boo
       </svg>
     );
   }
-  return <div className="flex flex-wrap gap-1">{hearts}</div>;
+  return <div className="flex flex-wrap justify-center gap-1.5 md:gap-1">{hearts}</div>;
 };
 
 export const StatBar: React.FC<{ label: string, value: number, color?: string }> = ({ label, value, color = 'bg-[var(--theme-primary,#F0F6F7)]' }) => (
