@@ -52,7 +52,7 @@ export class HeartlessAIService {
 
     try {
       const response = await this.ai.models.generateContent({
-        model: 'gemini-2.5-flash-image-preview',
+        model: 'gemini-3.1-flash-image',
         contents: { parts }
       });
 
