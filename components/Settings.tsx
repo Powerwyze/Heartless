@@ -9,10 +9,24 @@ interface SettingsProps {
   onThemeChange: (themeId: string) => void;
   currentMode: 'light' | 'dark';
   onModeChange: (mode: 'light' | 'dark') => void;
+  currentBg: string | null;
+  onBgChange: (color: string | null) => void;
   onDeleteAccount: () => void;
 }
 
-export const Settings: React.FC<SettingsProps> = ({ isOpen, onClose, currentTheme, onThemeChange, currentMode, onModeChange, onDeleteAccount }) => {
+// Background presets. Each is a single base color; bg-alt/text are auto-derived.
+const BG_PRESETS: { name: string; color: string }[] = [
+  { name: 'Midnight', color: '#0a0a0a' },
+  { name: 'Deep Navy', color: '#0f172a' },
+  { name: 'Forest', color: '#022c22' },
+  { name: 'Plum', color: '#1a0a1a' },
+  { name: 'Charcoal', color: '#1a1a1a' },
+  { name: 'Sepia', color: '#1a0f0a' },
+  { name: 'Cream', color: '#fef6e4' },
+  { name: 'Rose', color: '#fff1f2' },
+];
+
+export const Settings: React.FC<SettingsProps> = ({ isOpen, onClose, currentTheme, onThemeChange, currentMode, onModeChange, currentBg, onBgChange, onDeleteAccount }) => {
   if (!isOpen) return null;
 
   return (
@@ -68,6 +82,52 @@ export const Settings: React.FC<SettingsProps> = ({ isOpen, onClose, currentThem
               >
                 Dark
               </button>
+            </div>
+          </div>
+
+          {/* Background */}
+          <div className="mb-4">
+            <h3 className="font-mono text-[10px] text-[var(--theme-text-subtle,#747474)] uppercase tracking-wide mb-2">
+              Background
+            </h3>
+            <div className="grid grid-cols-4 gap-2 mb-3">
+              {BG_PRESETS.map((preset) => (
+                <button
+                  key={preset.color}
+                  onClick={() => onBgChange(preset.color)}
+                  title={preset.name}
+                  aria-label={`Set background ${preset.name}`}
+                  className={`relative h-10 rounded border-2 transition-all ${
+                    currentBg === preset.color
+                      ? 'border-[var(--theme-primary,#F0F6F7)]'
+                      : 'border-[var(--theme-border,#2a2a2a)] hover:border-[var(--theme-border-hover,#3a3a3a)]'
+                  }`}
+                  style={{ backgroundColor: preset.color }}
+                >
+                  {currentBg === preset.color && (
+                    <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-[var(--theme-primary,#F0F6F7)]" />
+                  )}
+                </button>
+              ))}
+            </div>
+            <div className="flex items-center gap-2">
+              <label className="flex items-center gap-2 flex-1 px-3 py-2 rounded border-2 border-[var(--theme-border,#2a2a2a)] cursor-pointer hover:border-[var(--theme-border-hover,#3a3a3a)] transition-colors">
+                <input
+                  type="color"
+                  value={currentBg || '#0a0a0a'}
+                  onChange={(e) => onBgChange(e.target.value)}
+                  className="w-6 h-6 rounded cursor-pointer bg-transparent border-0 p-0"
+                />
+                <span className="font-mono text-[10px] uppercase tracking-wide text-[var(--theme-text-muted,#919FA5)]">Custom</span>
+              </label>
+              {currentBg && (
+                <button
+                  onClick={() => onBgChange(null)}
+                  className="px-3 py-2 rounded border-2 border-[var(--theme-border,#2a2a2a)] font-mono text-[10px] uppercase tracking-wide text-[var(--theme-text-muted,#919FA5)] hover:text-[var(--theme-text,#F0F6F7)] hover:border-[var(--theme-border-hover,#3a3a3a)] transition-colors"
+                >
+                  Reset
+                </button>
+              )}
             </div>
           </div>
 

@@ -1,4 +1,5 @@
 import React from 'react';
+import { CATEGORY_CONFIG, type RelationshipCategory } from '../lib/categories';
 
 // HrtlessLogo: spells "HRTLESS" with each letter inside its own 16-bit pixel heart.
 // `size` controls overall heart height in px; letters scale with it.
@@ -107,25 +108,36 @@ export const PixelButton: React.FC<{
   );
 };
 
-export const CompassionMeter: React.FC<{ current: number, max: number, big?: boolean }> = ({ current, max, big }) => {
-  const hearts = [];
+// Category-aware unit meter. Renders `max` 16-bit pixel icons (the category's
+// glyph: heart/briefcase/handshake/hug) and fills `current` of them. Half-units
+// render the filled icon at reduced opacity.
+export const RelationshipMeter: React.FC<{
+  current: number,
+  max: number,
+  big?: boolean,
+  category?: RelationshipCategory,
+}> = ({ current, max, big, category = 'romantic' }) => {
+  const Icon = CATEGORY_CONFIG[category].icon;
+  const px = big ? 24 : 15;
+  const units = [];
   for (let i = 1; i <= max; i++) {
-    const size = big ? "w-7 h-7 md:w-5 md:h-5" : "w-4 h-4 md:w-3.5 md:h-3.5";
     const isActive = current >= i;
     const isHalf = !isActive && current >= i - 0.5;
-
-    hearts.push(
-      <svg
+    units.push(
+      <span
         key={i}
-        viewBox="0 0 24 24"
-        className={`${size} ${isActive ? 'text-[var(--theme-primary,#F0F6F7)] fill-[var(--theme-primary,#F0F6F7)]' : isHalf ? 'text-[var(--theme-primary,#F0F6F7)] fill-[var(--theme-primary,#F0F6F7)] opacity-40' : 'text-[var(--theme-text-subtle,#747474)] fill-none'} transition-colors duration-200`}
+        className={`inline-flex transition-opacity duration-200 ${isActive ? 'opacity-100' : isHalf ? 'opacity-50' : 'opacity-100'}`}
+        style={{ width: px, height: px }}
       >
-        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" stroke="currentColor" strokeWidth="2" />
-      </svg>
+        <Icon size={px} filled={isActive || isHalf} />
+      </span>
     );
   }
-  return <div className="flex flex-wrap justify-center gap-1.5 md:gap-1">{hearts}</div>;
+  return <div className="flex flex-wrap justify-center gap-1.5 md:gap-1">{units}</div>;
 };
+
+// Backwards-compatible alias — older call sites pass no category (defaults to romantic).
+export const CompassionMeter = RelationshipMeter;
 
 // Pokedex accent tones — maps a tone name to Tailwind utility classes.
 // Theme vars stay the source of truth for chrome; tones only tint per-tab accents.

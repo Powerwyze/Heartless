@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useMemo, useRef, useCallback } from 'react';
 import { Heart, Plus, Power, MessageSquare, Camera, User, History, Activity, ShieldAlert, BookOpen, Settings as SettingsIcon, Image as ImageIcon, CheckCircle2, ArrowRight, X, ThumbsUp, ThumbsDown, Sparkles, AlertCircle, Send, Zap, Shield, Target, Award, Brain, Star, MapPin, CheckSquare, Square, Clock, TrendingUp, Info, Save, Edit2, Trash2, PlusCircle, Archive } from 'lucide-react';
 import { Partner, RelationshipType, InteractionLog, AppState, LogType, Trait, Preference, AuthUser } from './types';
 import { INITIAL_PARTNERS } from './constants';
-import { PixelButton as ModernButton, CompassionMeter, StatBar, TagPill, RadarChart, Modal, PokedexScreen, PokedexLED, TabHeader, HrtlessLogo } from './components/RetroUI';
+import { PixelButton as ModernButton, CompassionMeter, RelationshipMeter, StatBar, TagPill, RadarChart, Modal, PokedexScreen, PokedexLED, TabHeader, HrtlessLogo } from './components/RetroUI';
+import { CATEGORY_CONFIG, CATEGORY_ORDER, type RelationshipCategory } from './lib/categories';
 import { PRDView } from './components/PRDView';
 import { HeartlessAIService } from './services/geminiService';
 import { onAuthStateChange, signOut as firebaseSignOut, deleteAccount as deleteFirebaseAccount } from './services/authService';
@@ -264,7 +265,7 @@ const App: React.FC = () => {
   const [isTarotLoading, setIsTarotLoading] = useState(false);
   const [tarotDealCount, setTarotDealCount] = useState(0);
   const [isTarotDealing, setIsTarotDealing] = useState(false);
-  const [onboardingGroup, setOnboardingGroup] = useState<'family' | 'friend' | 'romantic' | null>(null);
+  const [onboardingGroup, setOnboardingGroup] = useState<'family' | 'friend' | 'romantic' | 'business' | null>(null);
 
   // Emotional Update State
   const [isEmotionalUpdateOpen, setIsEmotionalUpdateOpen] = useState(false);
@@ -284,6 +285,9 @@ const App: React.FC = () => {
   const [themeMode, setThemeMode] = useState<'light' | 'dark'>(() => {
     return (localStorage.getItem('heartless_mode') as 'light' | 'dark') || 'light';
   });
+  // Optional global background override (custom color or preset). When null, the
+  // mode-driven background applies. Persisted to localStorage.
+  const [customBg, setCustomBg] = useState<string | null>(() => localStorage.getItem('heartless_bg_color'));
 
   const currentTheme = useMemo(() => getTheme(currentThemeId), [currentThemeId]);
 
@@ -334,22 +338,59 @@ const App: React.FC = () => {
     };
   }, [currentTheme, themeMode, toRgba]);
 
+  // Perceived brightness (0-255) of a hex color, for picking a contrasting text.
+  const perceivedBrightness = (hex: string) => {
+    const cleaned = hex.replace('#', '');
+    const norm = cleaned.length === 3 ? cleaned.split('').map((c) => c + c).join('') : cleaned;
+    const num = parseInt(norm, 16);
+    if (Number.isNaN(num)) return 0;
+    const r = (num >> 16) & 255;
+    const g = (num >> 8) & 255;
+    const b = num & 255;
+    return (r * 299 + g * 587 + b * 114) / 1000;
+  };
+
+  // Shift a hex color toward white (positive amt) or black (negative amt).
+  const shiftColor = (hex: string, amt: number) => {
+    const cleaned = hex.replace('#', '');
+    const norm = cleaned.length === 3 ? cleaned.split('').map((c) => c + c).join('') : cleaned;
+    const num = parseInt(norm, 16);
+    if (Number.isNaN(num)) return hex;
+    const clamp = (v: number) => Math.max(0, Math.min(255, Math.round(v)));
+    const r = clamp(((num >> 16) & 255) + amt);
+    const g = clamp(((num >> 8) & 255) + amt);
+    const b = clamp((num & 255) + amt);
+    return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, '0')}`;
+  };
+
+  // When a custom bg is set, override bg/bg-alt/text. Light colors get dark text;
+  // bg-alt is nudged toward white (on dark bgs) or black (on light bgs) for layering.
+  const bgOverride = useMemo(() => {
+    if (!customBg) return null;
+    const isLight = perceivedBrightness(customBg) > 128;
+    return {
+      bg: customBg,
+      bgAlt: shiftColor(customBg, isLight ? -14 : 14),
+      text: isLight ? '#0f1115' : '#f0f6f7',
+    };
+  }, [customBg]);
+
   const themeVars = useMemo(() => ({
     ['--theme-primary' as any]: currentTheme.colors.primary,
     ['--theme-primary-hover' as any]: currentTheme.colors.primaryHover,
     ['--theme-accent' as any]: currentTheme.colors.accent,
     ['--theme-accent-hover' as any]: currentTheme.colors.accentHover,
-    ['--theme-bg' as any]: modeVars.bg,
-    ['--theme-bg-alt' as any]: modeVars.bgAlt,
+    ['--theme-bg' as any]: bgOverride ? bgOverride.bg : modeVars.bg,
+    ['--theme-bg-alt' as any]: bgOverride ? bgOverride.bgAlt : modeVars.bgAlt,
     ['--theme-surface' as any]: modeVars.surface,
-    ['--theme-text' as any]: modeVars.text,
+    ['--theme-text' as any]: bgOverride ? bgOverride.text : modeVars.text,
     ['--theme-text-muted' as any]: modeVars.textMuted,
     ['--theme-text-subtle' as any]: modeVars.textSubtle,
     ['--theme-border' as any]: modeVars.border,
     ['--theme-border-hover' as any]: modeVars.borderHover,
     ['--theme-grad-a' as any]: modeVars.gradA,
     ['--theme-grad-b' as any]: modeVars.gradB,
-  }), [currentTheme, modeVars]);
+  }), [currentTheme, modeVars, bgOverride]);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -357,6 +398,19 @@ const App: React.FC = () => {
       root.style.setProperty(key, String(value));
     });
   }, [themeVars]);
+
+  useLayoutEffect(() => {
+    const el = mobileHeaderRef.current;
+    if (!el) {
+      setHeaderH(0);
+      return;
+    }
+    const measure = () => setHeaderH(el.offsetHeight);
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  });
 
   const shuffledQuotesRef = useRef<string[]>([]);
   const getNextLoadingQuote = useCallback(() => {
@@ -385,6 +439,12 @@ const App: React.FC = () => {
 
   const selectedPartner = state.partners.find(p => p.id === state.selectedPartnerId);
   const isTerminated = selectedPartner && selectedPartner.currentCompassion <= 0;
+  const partnerCategory: RelationshipCategory = selectedPartner?.relationshipCategory ?? 'romantic';
+
+  // Mobile-only pinned 3-row header. We measure its height so the scroll
+  // container can pad itself dynamically (rows 2 & 3 make height variable).
+  const mobileHeaderRef = useRef<HTMLDivElement>(null);
+  const [headerH, setHeaderH] = useState(0);
   const compatibility = { ...defaultCompatibility, ...(selectedPartner?.compatibility || {}) };
 
   const terminationMessage = useMemo(() => {
@@ -755,19 +815,28 @@ const App: React.FC = () => {
         "What's your strongest memory with them?",
         "What's the biggest tension or boundary right now?",
       ],
+      business: [
+        "What's their name?",
+        "What's their role (boss, client, coworker, partner)?",
+        "How do you work together?",
+        "What do they bring to the table?",
+        "What's the biggest friction or risk in this working relationship?",
+      ],
     } as const;
 
     if (onboardingStep === 1) {
       const normalized = currentInput.toLowerCase();
       const group = normalized.includes('family')
         ? 'family'
+        : (normalized.includes('business') || normalized.includes('work'))
+        ? 'business'
         : normalized.includes('friend')
         ? 'friend'
         : (normalized.includes('romantic') || normalized.includes('partner'))
         ? 'romantic'
         : null;
       if (!group) {
-        setChatHistory(prev => [...prev, { role: 'Cupid', text: "Pick one: family, friend, or romantic partner." }]);
+        setChatHistory(prev => [...prev, { role: 'Cupid', text: "Tap a category: romantic, business, friend, or family." }]);
         setIsProcessing(false);
         return;
       }
@@ -822,6 +891,7 @@ const App: React.FC = () => {
             dexNumber: (state.partners.length + 1).toString().padStart(3, '0'),
             name: profile.name,
             category: profile.category,
+            relationshipCategory: groupKey,
             flavorText: profile.flavorText,
           totalCompassion: 10,
           currentCompassion: 7,
@@ -899,12 +969,32 @@ const App: React.FC = () => {
       setUploadedImage(reader.result as string);
       setChatHistory(prev => [
         ...prev,
-        { role: 'Cupid', text: "Visual ID verified. Who is this person you're adding: family, friend, or romantic partner?" }
+        { role: 'Cupid', text: "Visual ID verified. Who is this person to you? Tap a category below." }
       ]);
       setOnboardingStep(1);
     };
       reader.readAsDataURL(file);
     }
+  };
+
+  // Category picker (step 1): records the chosen category as a User bubble,
+  // sets the onboarding group, and advances to the first interview question.
+  const selectOnboardingCategory = (group: 'romantic' | 'business' | 'friend' | 'family') => {
+    if (isProcessing || onboardingStep !== 1) return;
+    const questionSets = {
+      romantic: "What's their name?",
+      business: "What's their name?",
+      friend: "What's their name?",
+      family: "What's their name?",
+    } as const;
+    setChatHistory(prev => [...prev, { role: 'User', text: CATEGORY_CONFIG[group].label }]);
+    setOnboardingGroup(group);
+    setIsProcessing(true);
+    setTimeout(() => {
+      setChatHistory(prev => [...prev, { role: 'Cupid', text: questionSets[group] }]);
+      setOnboardingStep(2);
+      setIsProcessing(false);
+    }, 400);
   };
 
   const startEmotionalUpdate = () => {
@@ -1018,6 +1108,11 @@ const App: React.FC = () => {
     setThemeMode(mode);
     localStorage.setItem('heartless_mode', mode);
   };
+  const handleBgChange = (color: string | null) => {
+    setCustomBg(color);
+    if (color) localStorage.setItem('heartless_bg_color', color);
+    else localStorage.removeItem('heartless_bg_color');
+  };
 
   const handleDeleteAccount = async () => {
     if (!authUser) return;
@@ -1119,19 +1214,69 @@ const App: React.FC = () => {
       </div>
 
       <div className="flex-1 flex flex-col overflow-hidden min-h-0 pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-0">
-        {/* Mobile-only fixed avatar header — replaces page header on mobile when a partner is selected, pins to viewport top */}
+        {/* Mobile-only fixed 3-row header — pins to viewport top when a partner is selected. */}
         {selectedPartner && !isOnboarding && (
-          <div className="md:hidden fixed top-0 left-0 right-0 z-40 bg-[var(--theme-bg-alt,#111111)]/95 backdrop-blur-md border-b border-[var(--theme-border,#2a2a2a)] px-4 py-2 flex items-center gap-3" style={{ paddingTop: 'calc(0.5rem + env(safe-area-inset-top))' }}>
-            <div className={`relative w-12 h-12 shrink-0 rounded overflow-hidden bg-[var(--theme-bg-alt,#111111)] border border-emerald-500/30 ${isTerminated ? 'opacity-40 grayscale' : ''}`}>
-              <img src={selectedPartner.spriteUrl} alt="" className="w-full h-full object-contain" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-0.5">
-                <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-emerald-400 shrink-0">#{selectedPartner.dexNumber}</span>
-                <span className={`truncate text-sm font-semibold ${isTerminated ? 'text-red-400 line-through' : 'text-[var(--theme-text,#F0F6F7)]'}`}>{selectedPartner.name}</span>
+          <div
+            ref={mobileHeaderRef}
+            className="md:hidden fixed top-0 left-0 right-0 z-40 bg-[var(--theme-bg-alt,#111111)]/95 backdrop-blur-md border-b border-[var(--theme-border,#2a2a2a)]"
+            style={{ paddingTop: 'calc(0.5rem + env(safe-area-inset-top))' }}
+          >
+            {/* Row 1 — avatar + dex + name + meter */}
+            <div className="px-4 py-2 flex items-center gap-3">
+              <div className={`relative w-12 h-12 shrink-0 rounded overflow-hidden bg-[var(--theme-bg-alt,#111111)] border ${CATEGORY_CONFIG[partnerCategory].borderClass} ${isTerminated ? 'opacity-40 grayscale' : ''}`}>
+                <img src={selectedPartner.spriteUrl} alt="" className="w-full h-full object-contain" />
               </div>
-              <CompassionMeter current={selectedPartner.currentCompassion} max={selectedPartner.totalCompassion} />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-0.5">
+                  <span className={`font-mono text-[9px] uppercase tracking-[0.18em] shrink-0 ${CATEGORY_CONFIG[partnerCategory].textClass}`}>#{selectedPartner.dexNumber}</span>
+                  <span className={`truncate text-sm font-semibold ${isTerminated ? 'text-red-400 line-through' : 'text-[var(--theme-text,#F0F6F7)]'}`}>{selectedPartner.name}</span>
+                </div>
+                <RelationshipMeter current={selectedPartner.currentCompassion} max={selectedPartner.totalCompassion} category={partnerCategory} />
+              </div>
             </div>
+
+            {/* Row 2 — partner switcher strip */}
+            <div className="px-3 pb-1.5 flex items-center gap-2 overflow-x-auto custom-scrollbar">
+              {state.partners.map(p => (
+                <button
+                  key={p.id}
+                  onClick={() => setState(s => ({ ...s, selectedPartnerId: p.id }))}
+                  aria-label={`Switch to ${p.name}`}
+                  className={`shrink-0 w-9 h-9 rounded border overflow-hidden transition-all ${state.selectedPartnerId === p.id ? 'border-[var(--theme-primary,#F0F6F7)] opacity-100' : 'border-[var(--theme-border,#2a2a2a)] opacity-50'}`}
+                >
+                  <img src={p.spriteUrl} alt="" className="w-full h-full object-cover" />
+                </button>
+              ))}
+              <button
+                onClick={() => startOnboarding()}
+                aria-label="Add new partner"
+                className="shrink-0 w-9 h-9 rounded border border-dashed border-[var(--theme-border-hover,#3a3a3a)] text-[var(--theme-text-subtle,#747474)] flex items-center justify-center transition-colors hover:text-[var(--theme-text,#F0F6F7)]"
+              >
+                <Plus size={16} />
+              </button>
+            </div>
+
+            {/* Row 3 — recent event-log preview (tap to jump to full log) */}
+            <button
+              onClick={() => {
+                setState(s => ({ ...s, currentTab: 'history' }));
+                setTimeout(() => document.getElementById('event-log')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+              }}
+              className="w-full px-4 py-1.5 border-t border-[var(--theme-border,#2a2a2a)] text-left"
+            >
+              {selectedPartner.interactionLog.length > 0 ? (
+                <div className="flex flex-col gap-0.5">
+                  {selectedPartner.interactionLog.slice(0, 2).map(l => (
+                    <div key={l.id} className="flex items-center gap-1.5 truncate">
+                      <span className={`shrink-0 w-1 h-1 rounded-full ${l.type === LogType.POSITIVE ? 'bg-emerald-400' : l.type === LogType.NEGATIVE ? 'bg-red-400' : 'bg-[var(--theme-text-subtle,#747474)]'}`} />
+                      <span className="truncate text-[10px] text-[var(--theme-text-muted,#919FA5)]">{l.description}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <span className="text-[10px] text-[var(--theme-text-subtle,#747474)]">No events yet — tap to log</span>
+              )}
+            </button>
           </div>
         )}
         {/* Header */}
@@ -1195,6 +1340,26 @@ const App: React.FC = () => {
                 {isProcessing && <div className="chat-bubble-cupid p-4 w-16 ml-2"><div className="w-2 h-2 rounded-full bg-[var(--theme-text-subtle,#747474)] animate-pulse" /></div>}
                 <div ref={chatBottomRef} />
               </div>
+              {onboardingStep === 1 ? (
+                <div className="sticky bottom-0 mt-4 md:mt-6 grid grid-cols-2 gap-2 md:gap-3 p-3 bg-[var(--theme-surface,#141414)] rounded border border-[var(--theme-border,#2a2a2a)]">
+                  {CATEGORY_ORDER.map((cat) => {
+                    const cfg = CATEGORY_CONFIG[cat];
+                    const Icon = cfg.icon;
+                    return (
+                      <button
+                        key={cat}
+                        onClick={() => selectOnboardingCategory(cat)}
+                        disabled={isProcessing}
+                        style={{ touchAction: 'manipulation' }}
+                        className="flex items-center justify-center gap-2 min-h-[48px] rounded border border-[var(--theme-border,#2a2a2a)] bg-[var(--theme-bg-alt,#111111)] text-[var(--theme-text,#F0F6F7)] font-mono text-xs uppercase tracking-wide transition-colors hover:border-[var(--theme-border-hover,#3a3a3a)] active:scale-[0.98] disabled:opacity-40"
+                      >
+                        <Icon size={20} />
+                        {cfg.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : (
               <div className="sticky bottom-0 mt-4 md:mt-6 flex gap-2 md:gap-3 p-3 bg-[var(--theme-surface,#141414)] rounded border border-[var(--theme-border,#2a2a2a)] items-center">
                 {onboardingStep <= 1 && (
                   <button onClick={() => fileInputRef.current?.click()} className={`p-3 rounded transition-colors shrink-0 border ${uploadedImage ? 'bg-green-950/30 text-green-400 border-green-900/50' : 'bg-[var(--theme-bg-alt,#111111)] text-[var(--theme-text-muted,#919FA5)] border-[var(--theme-border,#2a2a2a)] hover:border-[var(--theme-border-hover,#3a3a3a)]'}`}>
@@ -1204,10 +1369,11 @@ const App: React.FC = () => {
                 <input className="flex-1 min-w-0 bg-transparent px-3 text-[var(--theme-text,#F0F6F7)] outline-none placeholder:text-[var(--theme-text-subtle,#747474)] text-base md:text-sm" value={userInput} onChange={e => setUserInput(e.target.value)} onKeyPress={e => e.key === 'Enter' && handleOnboardingChat()} placeholder={onboardingStep === 0 ? "Upload evidence first..." : "Enter response..."} disabled={onboardingStep === 0 && !uploadedImage} />
                 <button onClick={handleOnboardingChat} disabled={onboardingStep === 0 && !uploadedImage} className="bg-[var(--theme-surface,#141414)] hover:bg-[var(--theme-bg-alt,#111111)] text-[var(--theme-text,#F0F6F7)] p-2.5 rounded border border-[var(--theme-border,#2a2a2a)] hover:border-[var(--theme-border-hover,#3a3a3a)] transition-colors disabled:opacity-30"><ArrowRight size={20} /></button>
               </div>
+              )}
               <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageUpload} />
             </div>
           ) : selectedPartner ? (
-            <div className="flex-1 flex flex-col xl:flex-row px-4 pt-[calc(64px+env(safe-area-inset-top))] pb-4 md:pt-0 md:px-8 md:pb-8 xl:p-8 gap-4 md:gap-6 overflow-y-auto xl:overflow-hidden">
+            <div className="flex-1 flex flex-col xl:flex-row px-4 pb-4 md:!pt-0 md:px-8 md:pb-8 xl:p-8 gap-4 md:gap-6 overflow-y-auto xl:overflow-hidden" style={{ paddingTop: headerH ? headerH + 8 : undefined }}>
               {/* Profile Card Left */}
               <div className="w-full xl:w-72 flex flex-col gap-4 shrink-0">
               <div className={`glass p-6 flex-1 flex flex-col items-center justify-center relative overflow-hidden transition-colors duration-300 ${isTerminated ? 'border-red-900/50 bg-red-950/10' : ''}`}>
@@ -1241,7 +1407,7 @@ const App: React.FC = () => {
                     ) : (
                       <div className={`text-xl md:text-lg font-semibold tracking-tight break-words transition-colors ${isTerminated ? 'text-red-400 line-through' : 'text-[var(--theme-text,#F0F6F7)]'}`}>{selectedPartner.name}</div>
                     )}
-                    <div className="flex justify-center"><CompassionMeter current={selectedPartner.currentCompassion} max={selectedPartner.totalCompassion} big /></div>
+                    <div className="flex justify-center"><RelationshipMeter current={selectedPartner.currentCompassion} max={selectedPartner.totalCompassion} category={partnerCategory} big /></div>
                     <button
                       onClick={handleRemovePartner}
                       style={{ touchAction: 'manipulation' }}
@@ -1326,7 +1492,7 @@ const App: React.FC = () => {
                        </DataCard>
                     </div>
 
-                    <DataCard title="Type Effectiveness" isEditing={isEditing} onToggleEdit={() => setIsEditing(!isEditing)}>
+                    <DataCard title="Type Effectiveness" isEditing={isEditing} onToggleEdit={() => setIsEditing(!isEditing)} dotClass={CATEGORY_CONFIG[partnerCategory].colorClass} titleIcon={React.createElement(CATEGORY_CONFIG[partnerCategory].icon, { size: 14 })}>
                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
                           <StringListEditor 
                             label="EFFECTIVE AGAINST" 
@@ -1802,7 +1968,7 @@ const App: React.FC = () => {
                 )}
 
                 {state.currentTab === 'history' && (
-                  <div className="space-y-3">
+                  <div className="space-y-3" id="event-log">
                     {/* HRTLESS brand strip */}
                     <div className="flex items-center justify-center gap-3 px-3 py-3 rounded border-2 border-red-400/30 bg-gradient-to-r from-red-500/10 via-red-400/10 to-red-500/10">
                       <HrtlessLogo size={26} />
@@ -1903,6 +2069,8 @@ const App: React.FC = () => {
         onThemeChange={handleThemeChange}
         currentMode={themeMode}
         onModeChange={handleThemeModeChange}
+        currentBg={customBg}
+        onBgChange={handleBgChange}
         onDeleteAccount={handleDeleteAccount}
       />
     </div>
@@ -2072,10 +2240,14 @@ const NavIcon: React.FC<{ icon: React.ReactNode, active?: boolean, onClick: () =
   </button>
 );
 
-const DataCard: React.FC<{ title: string, children: React.ReactNode, className?: string, showEditToggle?: boolean, onToggleEdit?: () => void, isEditing?: boolean }> = ({ title, children, className = '', showEditToggle = true, onToggleEdit, isEditing }) => (
+const DataCard: React.FC<{ title: string, children: React.ReactNode, className?: string, showEditToggle?: boolean, onToggleEdit?: () => void, isEditing?: boolean, titleIcon?: React.ReactNode, dotClass?: string }> = ({ title, children, className = '', showEditToggle = true, onToggleEdit, isEditing, titleIcon, dotClass }) => (
   <div className={`glass p-4 md:p-5 transition-colors duration-200 ${className}`}>
     <h4 className="font-mono text-[10px] text-[var(--theme-text-subtle,#747474)] uppercase tracking-wide mb-4 md:mb-5 border-b-2 border-[var(--theme-border,#2a2a2a)] pb-2 flex items-center justify-between gap-2">
-       <span>{title}</span>
+       <span className="flex items-center gap-2">
+         {dotClass && <span className={`inline-block w-1.5 h-1.5 rounded-full ${dotClass}`} />}
+         {titleIcon}
+         {title}
+       </span>
        <div className="flex items-center gap-1.5">
          {showEditToggle && onToggleEdit && (
            <button

@@ -1,3 +1,5 @@
+import type { RelationshipCategory } from './lib/categories';
+
 export enum RelationshipType {
   CRUSH = 'CRUSH',
   SITUATIONSHIP = 'SITUATIONSHIP',
@@ -80,6 +82,7 @@ export interface Partner {
   dexNumber: string;
   name: string;
   category: string;
+  relationshipCategory: RelationshipCategory;
   flavorText: string;
   totalCompassion: number;
   currentCompassion: number;

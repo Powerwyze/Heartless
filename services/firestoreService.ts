@@ -49,6 +49,7 @@ const partnerFromRow = (
   dexNumber: row.dex_number,
   name: row.name,
   category: row.category,
+  relationshipCategory: row.relationship_category ?? 'romantic',
   flavorText: row.flavor_text,
   totalCompassion: row.total_compassion,
   currentCompassion: row.current_compassion,
@@ -82,6 +83,7 @@ const partnerToRow = (partner: Partial<Partner>): Row => {
   set('dex_number', partner.dexNumber);
   set('name', partner.name);
   set('category', partner.category);
+  set('relationship_category', partner.relationshipCategory);
   set('flavor_text', partner.flavorText);
   set('total_compassion', partner.totalCompassion);
   set('current_compassion', partner.currentCompassion);

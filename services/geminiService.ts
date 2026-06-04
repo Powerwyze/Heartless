@@ -84,15 +84,23 @@ ${base64Image ? "\nReference: Base the physical features (face, hair, skin tone,
     }
   }
 
-  async synthesizeProfile(convo: { role: string, text: string }[], group: 'family' | 'friend' | 'romantic'): Promise<any> {
+  async synthesizeProfile(convo: { role: string, text: string }[], group: 'family' | 'friend' | 'romantic' | 'business'): Promise<any> {
     const relationshipTypeOptions = {
       family: 'MOTHER, FATHER, SIBLING, COUSIN, AUNT/UNCLE, GRANDPARENT, CHILD',
       friend: 'FRIEND, BEST FRIEND, CO-WORKER',
       romantic: 'WIFEY MATERIAL, HUBBY MATERIAL, GF MATERIAL, BF MATERIAL, GIRLFRIEND, BOYFRIEND, DATING, TALKING STAGE, SITUATIONSHIP, FRIENDS WITH BENEFITS, CRUSH, SUGAR BABY, SUGAR DADDY, SUGAR MOMMA, LIFE PARTNER, EX',
+      business: 'CO-WORKER',
+    }[group];
+
+    const toneHint = {
+      family: 'Keep it warm and familial.',
+      friend: 'Keep it playful and loyal.',
+      romantic: 'Lean into the romance and chemistry.',
+      business: 'Frame it around trust, professionalism, and working chemistry rather than romance.',
     }[group];
 
     const prompt = `You are Cupid, the Supreme Relationship Analyst. You've interviewed a user about someone in their life.
-    The person is a ${group} relationship.
+    The person is a ${group} relationship. ${toneHint}
     Translate their messy human feelings into a structured "Partner Dex" profile.
     
     Conversation:
