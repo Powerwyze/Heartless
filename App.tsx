@@ -801,8 +801,12 @@ const App: React.FC = () => {
           // Generate sprite and upload to Firebase Storage
           let sprite = uploadedImage || '';
           try {
+            // IMPORTANT: do NOT pass the person's literal name into the image-gen prompt.
+            // Gemini will sometimes render the name as on-image text. We describe the
+            // archetype and personality only — the model handles likeness from the photo.
+            const spriteDescription = `A ${profile.category || 'person'} character. Personality: ${(profile.flavorText || '').slice(0, 200)}`;
             sprite = await ai.generateSprite(
-              `${profile.name} - ${profile.category}`,
+              spriteDescription,
               authUser.uid,
               partnerId,
               uploadedImage || undefined

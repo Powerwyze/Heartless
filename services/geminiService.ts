@@ -30,12 +30,20 @@ export class HeartlessAIService {
     };
 
     const prompt = `Create a full-body 16-bit pixel art character sprite.
-    Style: Classic GameBoy Advance character art.
-    Background: PURE SOLID WHITE BACKGROUND ONLY. NO CHECKERED PATTERNS. NO GRADIENTS.
-    Details: ${description}.
-    State: ${variantPrompts[variant] || variantPrompts.idle}
-    Rules: Strictly pixelated, vibrant retro colors, clear full-body silhouette. The character should be perfectly isolated on a solid white background.
-    ${base64Image ? "Base the physical features (hair, build, clothing) on the provided image." : ""}`;
+Style: Classic GameBoy Advance / SNES character art.
+Background: PURE SOLID WHITE BACKGROUND ONLY. NO checkered patterns. NO gradients. NO floor or tile grid. NO shadow grid.
+Character details: ${description}.
+Pose: ${variantPrompts[variant] || variantPrompts.idle}
+Rules: Strictly pixelated, vibrant retro colors, clear full-body silhouette. The character should be perfectly isolated on a solid pure white background, centered in the frame.
+
+ABSOLUTE RULES (CRITICAL):
+- Output ONLY the character sprite. NOTHING ELSE.
+- DO NOT render any text, letters, words, names, titles, captions, labels, signatures, watermarks, speech bubbles, dialogue boxes, UI elements, HUDs, frames, borders, logos, or numerals anywhere in the image.
+- The image must contain ZERO written characters. No alphabet, no numbers, no symbols, no punctuation.
+- The clothing must be plain or have abstract patterns only — NO printed text, NO logos, NO brand names, NO letters on the shirt/hoodie/jacket.
+- DO NOT add a nameplate, title card, or any caption next to or under the character.
+- If you are tempted to write the character's name or description on the image, DO NOT. Show ONLY the pixel art figure on a white background.
+${base64Image ? "\nReference: Base the physical features (face, hair, skin tone, build, general clothing style) on the provided photograph, but render the result strictly as 16-bit pixel art with NO text anywhere." : ""}`;
 
     const parts: any[] = [{ text: prompt }];
     if (base64Image) {
