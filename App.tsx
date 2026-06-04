@@ -1192,7 +1192,21 @@ const App: React.FC = () => {
               <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageUpload} />
             </div>
           ) : selectedPartner ? (
-            <div className="flex-1 flex flex-col xl:flex-row p-4 md:p-8 gap-4 md:gap-6 overflow-hidden">
+            <div className="flex-1 flex flex-col xl:flex-row p-4 md:p-8 gap-4 md:gap-6 overflow-y-auto xl:overflow-hidden">
+              {/* Sticky mini-header (mobile/tablet only) — keeps avatar + name + hearts visible while scrolling */}
+              <div className={`xl:hidden sticky top-0 z-20 -mx-4 -mt-4 md:-mx-8 md:-mt-8 mb-1 bg-[var(--theme-bg,#0a0a0a)]/95 backdrop-blur-sm border-b border-[var(--theme-border,#2a2a2a)] px-3 py-2 flex items-center gap-3`}>
+                <div className={`relative w-12 h-12 shrink-0 rounded overflow-hidden bg-[var(--theme-bg-alt,#111111)] border border-emerald-500/30 ${isTerminated ? 'opacity-40 grayscale' : ''}`}>
+                  <img src={selectedPartner.spriteUrl} alt="" className="w-full h-full object-contain" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-emerald-400 shrink-0">#{selectedPartner.dexNumber}</span>
+                    <span className={`truncate text-sm font-semibold ${isTerminated ? 'text-red-400 line-through' : 'text-[var(--theme-text,#F0F6F7)]'}`}>{selectedPartner.name}</span>
+                  </div>
+                  <CompassionMeter current={selectedPartner.currentCompassion} max={selectedPartner.totalCompassion} />
+                </div>
+              </div>
+
               {/* Profile Card Left */}
               <div className="w-full xl:w-72 flex flex-col gap-4 shrink-0">
               <div className={`glass p-6 flex-1 flex flex-col items-center justify-center relative overflow-hidden transition-colors duration-300 ${isTerminated ? 'border-red-900/50 bg-red-950/10' : ''}`}>
@@ -1263,7 +1277,7 @@ const App: React.FC = () => {
               </div>
 
               {/* Tabs Right */}
-              <div className="flex-1 overflow-y-auto pr-0 md:pr-4 space-y-4 md:space-y-6 custom-scrollbar">
+              <div className="flex-1 xl:overflow-y-auto pr-0 md:pr-4 space-y-4 md:space-y-6 custom-scrollbar">
                 {state.currentTab === 'dex' && (
                   <div className="space-y-6">
                     <TabHeader tone="green" title="Pokedex Entry" counter={`#${selectedPartner.dexNumber}`} icon={<User size={14} />} />
