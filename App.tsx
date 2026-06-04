@@ -1192,9 +1192,9 @@ const App: React.FC = () => {
               <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageUpload} />
             </div>
           ) : selectedPartner ? (
-            <div className="flex-1 flex flex-col xl:flex-row p-4 md:p-8 gap-4 md:gap-6 overflow-y-auto xl:overflow-hidden">
+            <div className="flex-1 flex flex-col xl:flex-row px-4 pb-4 md:px-8 md:pb-8 xl:p-8 gap-4 md:gap-6 overflow-y-auto xl:overflow-hidden">
               {/* Sticky mini-header (mobile/tablet only) — keeps avatar + name + hearts visible while scrolling */}
-              <div className={`xl:hidden sticky top-0 z-20 -mx-4 -mt-4 md:-mx-8 md:-mt-8 mb-1 bg-[var(--theme-bg,#0a0a0a)]/95 backdrop-blur-sm border-b border-[var(--theme-border,#2a2a2a)] px-3 py-2 flex items-center gap-3`}>
+              <div className={`xl:hidden sticky top-0 z-20 -mx-4 md:-mx-8 mb-2 bg-[var(--theme-bg,#0a0a0a)]/95 backdrop-blur-sm border-b border-[var(--theme-border,#2a2a2a)] px-4 md:px-8 py-2 flex items-center gap-3`}>
                 <div className={`relative w-12 h-12 shrink-0 rounded overflow-hidden bg-[var(--theme-bg-alt,#111111)] border border-emerald-500/30 ${isTerminated ? 'opacity-40 grayscale' : ''}`}>
                   <img src={selectedPartner.spriteUrl} alt="" className="w-full h-full object-contain" />
                 </div>
