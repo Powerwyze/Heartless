@@ -1119,8 +1119,23 @@ const App: React.FC = () => {
       </div>
 
       <div className="flex-1 flex flex-col overflow-hidden min-h-0 pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-0">
+        {/* Mobile-only fixed avatar header — replaces page header on mobile when a partner is selected, pins to viewport top */}
+        {selectedPartner && !isOnboarding && (
+          <div className="md:hidden fixed top-0 left-0 right-0 z-40 bg-[var(--theme-bg-alt,#111111)]/95 backdrop-blur-md border-b border-[var(--theme-border,#2a2a2a)] px-4 py-2 flex items-center gap-3" style={{ paddingTop: 'calc(0.5rem + env(safe-area-inset-top))' }}>
+            <div className={`relative w-12 h-12 shrink-0 rounded overflow-hidden bg-[var(--theme-bg-alt,#111111)] border border-emerald-500/30 ${isTerminated ? 'opacity-40 grayscale' : ''}`}>
+              <img src={selectedPartner.spriteUrl} alt="" className="w-full h-full object-contain" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-0.5">
+                <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-emerald-400 shrink-0">#{selectedPartner.dexNumber}</span>
+                <span className={`truncate text-sm font-semibold ${isTerminated ? 'text-red-400 line-through' : 'text-[var(--theme-text,#F0F6F7)]'}`}>{selectedPartner.name}</span>
+              </div>
+              <CompassionMeter current={selectedPartner.currentCompassion} max={selectedPartner.totalCompassion} />
+            </div>
+          </div>
+        )}
         {/* Header */}
-        <header className="sticky top-0 z-30 md:static h-auto md:h-16 flex flex-col md:flex-row md:items-center md:justify-between px-4 md:px-8 py-3 md:py-0 border-b border-[var(--theme-border,#2a2a2a)] bg-[var(--theme-bg-alt,#111111)] gap-3">
+        <header className={`sticky top-0 z-30 md:static h-auto md:h-16 flex flex-col md:flex-row md:items-center md:justify-between px-4 md:px-8 py-3 md:py-0 border-b border-[var(--theme-border,#2a2a2a)] bg-[var(--theme-bg-alt,#111111)] gap-3 ${selectedPartner && !isOnboarding ? 'hidden md:flex' : ''}`}>
           <div className="flex items-center gap-3 md:gap-4 flex-wrap">
             <h2 className="text-sm md:text-base font-semibold tracking-tight text-[var(--theme-text,#F0F6F7)]">
                {isOnboarding ? 'Onboarding Protocol' : (selectedPartner?.name || 'Database')}
@@ -1192,21 +1207,7 @@ const App: React.FC = () => {
               <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageUpload} />
             </div>
           ) : selectedPartner ? (
-            <div className="flex-1 flex flex-col xl:flex-row px-4 pb-4 md:px-8 md:pb-8 xl:p-8 gap-4 md:gap-6 overflow-y-auto xl:overflow-hidden">
-              {/* Sticky mini-header (mobile/tablet only) — keeps avatar + name + hearts visible while scrolling */}
-              <div className={`xl:hidden sticky top-0 z-20 -mx-4 md:-mx-8 mb-2 bg-[var(--theme-bg,#0a0a0a)]/95 backdrop-blur-sm border-b border-[var(--theme-border,#2a2a2a)] px-4 md:px-8 py-2 flex items-center gap-3`}>
-                <div className={`relative w-12 h-12 shrink-0 rounded overflow-hidden bg-[var(--theme-bg-alt,#111111)] border border-emerald-500/30 ${isTerminated ? 'opacity-40 grayscale' : ''}`}>
-                  <img src={selectedPartner.spriteUrl} alt="" className="w-full h-full object-contain" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-0.5">
-                    <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-emerald-400 shrink-0">#{selectedPartner.dexNumber}</span>
-                    <span className={`truncate text-sm font-semibold ${isTerminated ? 'text-red-400 line-through' : 'text-[var(--theme-text,#F0F6F7)]'}`}>{selectedPartner.name}</span>
-                  </div>
-                  <CompassionMeter current={selectedPartner.currentCompassion} max={selectedPartner.totalCompassion} />
-                </div>
-              </div>
-
+            <div className="flex-1 flex flex-col xl:flex-row px-4 pt-[calc(64px+env(safe-area-inset-top))] pb-4 md:pt-0 md:px-8 md:pb-8 xl:p-8 gap-4 md:gap-6 overflow-y-auto xl:overflow-hidden">
               {/* Profile Card Left */}
               <div className="w-full xl:w-72 flex flex-col gap-4 shrink-0">
               <div className={`glass p-6 flex-1 flex flex-col items-center justify-center relative overflow-hidden transition-colors duration-300 ${isTerminated ? 'border-red-900/50 bg-red-950/10' : ''}`}>
