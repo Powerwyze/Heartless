@@ -2009,6 +2009,20 @@ const App: React.FC = () => {
 
       {/* Modal - Vibe Check */}
       <Modal isOpen={isVibeCheckOpen} onClose={() => setIsVibeCheckOpen(false)} title="Vibe Check">
+        {selectedPartner && (
+          <div className="sticky top-0 z-10 -mx-5 -mt-5 mb-3 px-5 pt-5 pb-2 bg-[var(--theme-bg-alt,#111111)]/95 backdrop-blur-sm border-b border-[var(--theme-border,#2a2a2a)] flex items-center gap-3">
+            <div className={`relative w-10 h-10 shrink-0 rounded overflow-hidden bg-[var(--theme-bg-alt,#111111)] border ${CATEGORY_CONFIG[partnerCategory].borderClass} ${isTerminated ? 'opacity-40 grayscale' : ''}`}>
+              <img src={selectedPartner.spriteUrl} alt="" className="w-full h-full object-contain" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-0.5">
+                <span className={`font-mono text-[9px] uppercase tracking-[0.18em] shrink-0 ${CATEGORY_CONFIG[partnerCategory].textClass}`}>#{selectedPartner.dexNumber}</span>
+                <span className={`truncate text-sm font-semibold ${isTerminated ? 'text-red-400 line-through' : 'text-[var(--theme-text,#F0F6F7)]'}`}>{selectedPartner.name}</span>
+              </div>
+              <RelationshipMeter current={selectedPartner.currentCompassion} max={selectedPartner.totalCompassion} category={partnerCategory} />
+            </div>
+          </div>
+        )}
         <div className="h-[400px] flex flex-col">
           <div className="flex-1 overflow-y-auto space-y-3 pr-2 custom-scrollbar">
             {vibeChat.map((msg, i) => (
