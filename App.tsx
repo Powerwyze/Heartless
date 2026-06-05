@@ -1029,10 +1029,19 @@ const App: React.FC = () => {
   };
 
   const applyVerdict = (agreed: boolean) => {
-    if (agreed && verdict && selectedPartner) logEvent(verdict.delta, verdict.reason);
-    setIsVibeCheckOpen(false);
-    setVibeChat([]);
-    setVerdict(null);
+    if (agreed && verdict && selectedPartner) {
+      logEvent(verdict.delta, verdict.reason);
+      // Let the heart meter animation play before closing the modal.
+      setVerdict(null);
+      setTimeout(() => {
+        setIsVibeCheckOpen(false);
+        setVibeChat([]);
+      }, 900);
+    } else {
+      setIsVibeCheckOpen(false);
+      setVibeChat([]);
+      setVerdict(null);
+    }
   };
 
   const logEvent = async (delta: number, desc: string) => {
