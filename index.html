@@ -131,6 +131,27 @@
       50% { box-shadow: 0 0 0 8px rgba(236, 72, 153, 0), 0 0 30px rgba(236, 72, 153, 0.5); }
     }
     .animate-hrtless-pulse { animation: hrtless-pulse-glow 2s ease-in-out infinite; }
+
+    /* RelationshipMeter unit change animations */
+    @keyframes meter-gain {
+      0% { transform: scale(0.6); opacity: 0; }
+      60% { transform: scale(1.15); opacity: 1; filter: drop-shadow(0 0 4px rgba(236, 72, 153, 0.6)); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    @keyframes meter-loss {
+      0% { transform: scale(1) translateX(0); }
+      25% { transform: scale(1.05) translateX(-2px); }
+      50% { transform: translateX(2px); }
+      75% { transform: translateX(-1px); }
+      100% { transform: scale(1) translateX(0); opacity: 0.4; }
+    }
+    @keyframes meter-bump {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    [data-just-lit="true"] { animation: meter-gain 500ms ease-out; }
+    [data-just-lost="true"] { animation: meter-loss 500ms ease-in-out; }
+    .animate-meter-bump { animation: meter-bump 500ms ease-in-out; }
   </style>
 <script type="importmap">
 {

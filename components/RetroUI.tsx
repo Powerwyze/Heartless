@@ -119,13 +119,33 @@ export const RelationshipMeter: React.FC<{
 }> = ({ current, max, big, category = 'romantic' }) => {
   const Icon = CATEGORY_CONFIG[category].icon;
   const px = big ? 24 : 15;
+
+  // Animate units that just lit up (gain) or went empty (loss) when `current` changes.
+  const prevRef = React.useRef(current);
+  const [change, setChange] = React.useState<{ type: 'gain' | 'loss' | null, lo: number, hi: number }>({ type: null, lo: 0, hi: 0 });
+  React.useEffect(() => {
+    const prev = prevRef.current;
+    if (prev === current) return;
+    const type = current > prev ? 'gain' : 'loss';
+    const lo = Math.min(prev, current);
+    const hi = Math.max(prev, current);
+    setChange({ type, lo, hi });
+    prevRef.current = current;
+    const t = setTimeout(() => setChange({ type: null, lo: 0, hi: 0 }), 600);
+    return () => clearTimeout(t);
+  }, [current]);
+
   const units = [];
   for (let i = 1; i <= max; i++) {
     const isActive = current >= i;
     const isHalf = !isActive && current >= i - 0.5;
+    const justLit = change.type === 'gain' && i > change.lo && i <= change.hi;
+    const justLost = change.type === 'loss' && i > change.lo && i <= change.hi;
     units.push(
       <span
         key={i}
+        data-just-lit={justLit || undefined}
+        data-just-lost={justLost || undefined}
         className={`inline-flex transition-opacity duration-200 ${isActive ? 'opacity-100' : isHalf ? 'opacity-50' : 'opacity-100'}`}
         style={{ width: px, height: px }}
       >
@@ -133,7 +153,7 @@ export const RelationshipMeter: React.FC<{
       </span>
     );
   }
-  return <div className="flex flex-wrap justify-center gap-1.5 md:gap-1">{units}</div>;
+  return <div className={`flex flex-wrap justify-center gap-1.5 md:gap-1 ${change.type ? 'animate-meter-bump' : ''}`}>{units}</div>;
 };
 
 // Backwards-compatible alias — older call sites pass no category (defaults to romantic).

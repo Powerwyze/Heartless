@@ -184,9 +184,9 @@ ${base64Image ? "\nReference: Base the physical features (face, hair, skin tone,
     const prompt = `My friend's romantic interest ${partnerName} did this: ${recentEvents.join(', ')}. Cupid, react as a fair judge. Keep it short.`;
     try {
       const response = await this.ai.models.generateContent({
-        model: 'gemini-3-flash-preview',
+        model: 'gemini-flash-latest',
         contents: prompt,
-        config: { systemInstruction }
+        config: { systemInstruction, temperature: 0.7, maxOutputTokens: 256 }
       });
       return response.text || "How does that actually make you feel?";
     } catch {
