@@ -19,7 +19,7 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ isOpen, onClose, onS
             <Sparkles size={20} strokeWidth={2} />
           </span>
           <h2 className="text-base font-semibold text-[var(--theme-text,#F0F6F7)]">
-            Welcome to Heartless
+            Welcome to hrtless
           </h2>
         </div>
 

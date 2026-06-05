@@ -84,7 +84,7 @@ const LOADING_QUOTES = [
   "I’m not your man — PartyNextDoor",
   "I’m emotionally unavailable — Summer Walker",
   "I don’t wanna be saved — Future",
-  "I’m heartless — The Weeknd",
+  "I’m hrtless — The Weeknd",
   "I love women, not one woman — Future",
   "I can’t be faithful — Chris Brown",
   "I break hearts — Rod Wave",
@@ -1170,7 +1170,7 @@ const App: React.FC = () => {
              </div>
           </div>
           <div className="space-y-2">
-            <h1 className="text-4xl font-bold tracking-tighter text-white neon-text uppercase">HEARTLESS</h1>
+            <h1 className="text-4xl font-bold tracking-tighter text-white neon-text uppercase">HRTLESS</h1>
             <p className="text-white/40 text-[10px] font-bold tracking-[0.4em] uppercase">Partner Analysis v2.5</p>
           </div>
           <ModernButton className="w-full py-4 text-sm tracking-widest" onClick={() => setIsLoggedOut(false)}>INITIALIZE DEX</ModernButton>
@@ -1989,9 +1989,19 @@ const App: React.FC = () => {
               </div>
             </div>
           ) : (
-            <div className="flex-1 flex flex-col items-center justify-center">
+            <div className="flex-1 flex flex-col items-center justify-center text-center px-6 py-12 gap-4">
                <ShieldAlert size={48} className="text-[var(--theme-text-subtle,#747474)]" />
-               <p className="mt-4 font-mono text-[10px] uppercase tracking-wide text-[var(--theme-text-subtle,#747474)]">Searching Database...</p>
+               <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--theme-text-subtle,#747474)]">Database Empty</p>
+               <p className="text-sm text-[var(--theme-text,#F0F6F7)] max-w-xs leading-relaxed">
+                 Your private relationship diary. Track how people make you feel, log what happens, and get advice when things feel off.
+               </p>
+               <button
+                 onClick={() => startOnboarding()}
+                 style={{ touchAction: 'manipulation' }}
+                 className="mt-2 py-4 px-6 bg-gradient-to-r from-pink-500 to-rose-500 text-white font-mono text-sm font-bold uppercase tracking-wider rounded-lg shadow-lg active:scale-[0.98] transition-transform animate-hrtless-pulse"
+               >
+                 + Add First Partner
+               </button>
             </div>
           )}
         </main>

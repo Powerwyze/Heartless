@@ -60,6 +60,9 @@ export const AuthUI: React.FC<AuthUIProps> = ({ onAuthSuccess }) => {
             <p className="font-mono text-[10px] text-[var(--theme-text-subtle,#747474)] uppercase tracking-wide">
               Partner Dex System
             </p>
+            <p className="text-xs text-[var(--theme-text-muted,#919FA5)] mt-3 max-w-[15rem] leading-relaxed">
+              A private diary for the people in your life.
+            </p>
           </div>
 
           {/* Form */}

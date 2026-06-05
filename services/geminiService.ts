@@ -177,7 +177,7 @@ ${base64Image ? "\nReference: Base the physical features (face, hair, skin tone,
   }
 
   async getCupidAdvice(partnerName: string, recentEvents: string[], compassionRatio: number): Promise<string> {
-    const systemInstruction = `You are Cupid, the Heartless Guide. You are supportive, wise, and slightly cheeky. 
+    const systemInstruction = `You are Cupid, the hrtless Guide. You are supportive, wise, and slightly cheeky. 
     YOU ARE A FAIR JUDGE. If the user is being toxic, unfair, or overreacting, call them out nicely.
     KEEP RESPONSES EXTREMELY SHORT (Max 15 words). 
     Ask a punchy question about their feelings.`;
@@ -234,7 +234,7 @@ ${base64Image ? "\nReference: Base the physical features (face, hair, skin tone,
   }
 
   async getHoroscopeCompatibility(userSign: string, partnerSign: string): Promise<string> {
-    const systemInstruction = `You are Cupid, the Heartless Guide. Keep it playful, short, and practical.
+    const systemInstruction = `You are Cupid, the hrtless Guide. Keep it playful, short, and practical.
     Keep responses to 2 short sentences max. No claims of certainty.`;
     const prompt = `Give a quick compatibility fortune for ${userSign} and ${partnerSign} today.`;
     try {
@@ -250,7 +250,7 @@ ${base64Image ? "\nReference: Base the physical features (face, hair, skin tone,
   }
 
   async getTarotReading(question: string, cards: string[]): Promise<string> {
-    const systemInstruction = `You are Cupid, the Heartless Guide. Short, poetic, and practical.
+    const systemInstruction = `You are Cupid, the hrtless Guide. Short, poetic, and practical.
     Keep it to 3 short sentences max.`;
     const prompt = `Question: "${question}"
 Cards: ${cards.join(', ')}

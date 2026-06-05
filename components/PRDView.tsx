@@ -20,10 +20,10 @@ export const PRDView: React.FC<{ onClose: () => void; isFirstTime?: boolean; onS
         </div>
 
         <section className="space-y-3">
-          <h2 className="font-mono text-xs text-[var(--theme-text-subtle,#747474)] uppercase tracking-wide border-l-2 border-[var(--theme-primary,#F0F6F7)] pl-3">What is Heartless?</h2>
+          <h2 className="font-mono text-xs text-[var(--theme-text-subtle,#747474)] uppercase tracking-wide border-l-2 border-[var(--theme-primary,#F0F6F7)] pl-3">What is hrtless?</h2>
           <div className="bg-[var(--theme-surface,#141414)] p-4 border border-[var(--theme-border,#2a2a2a)] rounded">
             <p className="leading-relaxed">
-              <strong className="text-[var(--theme-text,#F0F6F7)]">Heartless</strong> is a private diary to help you keep track of your relationships.
+              <strong className="text-[var(--theme-text,#F0F6F7)]">hrtless</strong> is a private diary to help you keep track of your relationships.
               Think of it like a character collection for the people you meet. You can track how happy the relationship makes you, note down things they do, and get advice when things feel a bit off.
             </p>
           </div>

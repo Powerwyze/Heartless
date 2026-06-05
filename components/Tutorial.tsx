@@ -17,7 +17,7 @@ interface TutorialProps {
 
 const tutorialSteps: TutorialStep[] = [
   {
-    title: 'Welcome to Heartless',
+    title: 'Welcome to hrtless',
     description: 'Your AI-powered relationship tracking system. Let me show you around.',
     target: '',
     position: 'bottom',
