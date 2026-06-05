@@ -267,9 +267,9 @@ const App: React.FC = () => {
   const [isTarotDealing, setIsTarotDealing] = useState(false);
   const [onboardingGroup, setOnboardingGroup] = useState<'family' | 'friend' | 'romantic' | 'business' | null>(null);
 
-  // Emotional Update State
-  const [isEmotionalUpdateOpen, setIsEmotionalUpdateOpen] = useState(false);
-  const [emotionalChat, setEmotionalChat] = useState<{role: 'Cupid' | 'User', text: string}[]>([]);
+  // Vibe Check State
+  const [isVibeCheckOpen, setIsVibeCheckOpen] = useState(false);
+  const [vibeChat, setVibeChat] = useState<{role: 'Cupid' | 'User', text: string}[]>([]);
   const [verdict, setVerdict] = useState<{ delta: number, reason: string } | null>(null);
 
   // Tutorial State
@@ -434,7 +434,7 @@ const App: React.FC = () => {
 
   const ai = useMemo(() => new HeartlessAIService(), []);
   const chatBottomRef = useRef<HTMLDivElement>(null);
-  const emotionalBottomRef = useRef<HTMLDivElement>(null);
+  const vibeBottomRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const selectedPartner = state.partners.find(p => p.id === state.selectedPartnerId);
@@ -524,8 +524,8 @@ const App: React.FC = () => {
   }, [chatHistory, isProcessing]);
 
   useEffect(() => {
-    if (emotionalBottomRef.current) emotionalBottomRef.current.scrollIntoView({ behavior: 'smooth' });
-  }, [emotionalChat, isProcessing]);
+    if (vibeBottomRef.current) vibeBottomRef.current.scrollIntoView({ behavior: 'smooth' });
+  }, [vibeChat, isProcessing]);
 
   // --- Update Helpers ---
   const updatePartner = async (updates: Partial<Partner>) => {
@@ -997,32 +997,32 @@ const App: React.FC = () => {
     }, 400);
   };
 
-  const startEmotionalUpdate = () => {
+  const startVibeCheck = () => {
     if (!selectedPartner) return;
-    setEmotionalChat([{ role: 'Cupid', text: `Status update for ${selectedPartner.name}? What happened recently?` }]);
-    setIsEmotionalUpdateOpen(true);
+    setVibeChat([{ role: 'Cupid', text: `Vibe check on ${selectedPartner.name} — what's going on?` }]);
+    setIsVibeCheckOpen(true);
     setVerdict(null);
   };
 
-  const handleEmotionalUpdateChat = async () => {
+  const handleVibeCheckChat = async () => {
     if (!userInput.trim() || isProcessing || verdict) return;
     const userMsg = userInput;
-    const newHistory = [...emotionalChat, { role: 'User', text: userMsg } as const];
-    setEmotionalChat(newHistory);
+    const newHistory = [...vibeChat, { role: 'User', text: userMsg } as const];
+    setVibeChat(newHistory);
     setUserInput('');
     setIsProcessing(true);
 
     try {
       if (newHistory.length < 4) {
         const response = await ai.getCupidAdvice(selectedPartner?.name || 'them', [userMsg], 0.5);
-        setEmotionalChat(prev => [...prev, { role: 'Cupid', text: response }]);
+        setVibeChat(prev => [...prev, { role: 'Cupid', text: response }]);
       } else {
         const result = await ai.getEmotionalVerdict(selectedPartner?.name || 'them', newHistory);
-        setEmotionalChat(prev => [...prev, { role: 'Cupid', text: `${result.reason}\n\nAdjust by ${result.delta} compassion units?` }]);
+        setVibeChat(prev => [...prev, { role: 'Cupid', text: `${result.reason}\n\nAdjust by ${result.delta} compassion units?` }]);
         setVerdict(result);
       }
     } catch {
-      setEmotionalChat(prev => [...prev, { role: 'Cupid', text: "Signal interference. Try again, sweetie." }]);
+      setVibeChat(prev => [...prev, { role: 'Cupid', text: "Signal interference. Try again, sweetie." }]);
     } finally {
       setIsProcessing(false);
     }
@@ -1030,8 +1030,8 @@ const App: React.FC = () => {
 
   const applyVerdict = (agreed: boolean) => {
     if (agreed && verdict && selectedPartner) logEvent(verdict.delta, verdict.reason);
-    setIsEmotionalUpdateOpen(false);
-    setEmotionalChat([]);
+    setIsVibeCheckOpen(false);
+    setVibeChat([]);
     setVerdict(null);
   };
 
@@ -1256,27 +1256,25 @@ const App: React.FC = () => {
               </button>
             </div>
 
-            {/* Row 3 — recent event-log preview (tap to jump to full log) */}
-            <button
-              onClick={() => {
-                setState(s => ({ ...s, currentTab: 'history' }));
-                setTimeout(() => document.getElementById('event-log')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
-              }}
-              className="w-full px-4 py-1.5 border-t border-[var(--theme-border,#2a2a2a)] text-left"
-            >
-              {selectedPartner.interactionLog.length > 0 ? (
-                <div className="flex flex-col gap-0.5">
-                  {selectedPartner.interactionLog.slice(0, 2).map(l => (
-                    <div key={l.id} className="flex items-center gap-1.5 truncate">
-                      <span className={`shrink-0 w-1 h-1 rounded-full ${l.type === LogType.POSITIVE ? 'bg-emerald-400' : l.type === LogType.NEGATIVE ? 'bg-red-400' : 'bg-[var(--theme-text-subtle,#747474)]'}`} />
-                      <span className="truncate text-[10px] text-[var(--theme-text-muted,#919FA5)]">{l.description}</span>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <span className="text-[10px] text-[var(--theme-text-subtle,#747474)]">No events yet — tap to log</span>
-              )}
-            </button>
+            {/* Row 3 — loud Vibe Check CTA */}
+            <div className="px-3 pt-1.5 pb-2 border-t border-[var(--theme-border,#2a2a2a)]">
+              <button
+                onClick={startVibeCheck}
+                style={{ touchAction: 'manipulation' }}
+                className={`w-full h-11 px-4 rounded-lg flex items-center justify-between gap-2 text-white font-mono text-sm font-bold uppercase tracking-wider shadow-lg active:scale-[0.98] transition-transform bg-gradient-to-r ${
+                  {
+                    romantic: 'from-pink-500 to-rose-500',
+                    business: 'from-amber-500 to-yellow-500',
+                    friend: 'from-emerald-500 to-teal-500',
+                    family: 'from-violet-500 to-fuchsia-500',
+                  }[partnerCategory]
+                }`}
+              >
+                <MessageSquare size={16} className="shrink-0" />
+                <span>Vibe Check</span>
+                <span className="shrink-0 w-2 h-2 rounded-full bg-white/90 animate-pulse" />
+              </button>
+            </div>
           </div>
         )}
         {/* Header */}
@@ -1518,8 +1516,8 @@ const App: React.FC = () => {
                        <div className="space-y-4">
                           <div data-tutorial="actions">
                             {!isTerminated && (
-                              <button onClick={startEmotionalUpdate} className="w-full bg-[var(--theme-surface,#141414)] hover:bg-[var(--theme-bg-alt,#111111)] text-[var(--theme-text-muted,#919FA5)] hover:text-[var(--theme-text,#F0F6F7)] py-3 rounded font-mono text-[10px] uppercase tracking-wide border border-[var(--theme-border,#2a2a2a)] hover:border-[var(--theme-border-hover,#3a3a3a)] flex items-center justify-center gap-2 transition-colors">
-                                 <MessageSquare size={14} /> Emotional Update
+                              <button onClick={startVibeCheck} className="w-full bg-[var(--theme-surface,#141414)] hover:bg-[var(--theme-bg-alt,#111111)] text-[var(--theme-text-muted,#919FA5)] hover:text-[var(--theme-text,#F0F6F7)] py-3 rounded font-mono text-[10px] uppercase tracking-wide border border-[var(--theme-border,#2a2a2a)] hover:border-[var(--theme-border-hover,#3a3a3a)] flex items-center justify-center gap-2 transition-colors">
+                                 <MessageSquare size={14} /> Vibe Check
                               </button>
                             )}
                           </div>
@@ -1999,15 +1997,15 @@ const App: React.FC = () => {
         </main>
       </div>
 
-      {/* Modal - Emotional Lab */}
-      <Modal isOpen={isEmotionalUpdateOpen} onClose={() => setIsEmotionalUpdateOpen(false)} title="Emotional Update">
+      {/* Modal - Vibe Check */}
+      <Modal isOpen={isVibeCheckOpen} onClose={() => setIsVibeCheckOpen(false)} title="Vibe Check">
         <div className="h-[400px] flex flex-col">
           <div className="flex-1 overflow-y-auto space-y-3 pr-2 custom-scrollbar">
-            {emotionalChat.map((msg, i) => (
+            {vibeChat.map((msg, i) => (
               <div key={i} className={`flex ${msg.role === 'Cupid' ? 'justify-start' : 'justify-end'}`}>
                 <div className={`max-w-[85%] p-3 ${msg.role === 'Cupid' ? 'chat-bubble-cupid' : 'chat-bubble-user'}`}>
                   <p className="text-sm text-[var(--theme-text,#F0F6F7)] whitespace-pre-wrap leading-relaxed">{msg.text}</p>
-                  {i === emotionalChat.length - 1 && verdict && (
+                  {i === vibeChat.length - 1 && verdict && (
                     <div className="mt-4 flex gap-2">
                       <button onClick={() => applyVerdict(true)} className="flex-1 bg-transparent hover:bg-green-950/30 text-green-400 py-2 rounded font-mono text-xs flex items-center justify-center gap-2 border border-green-900/50 hover:border-green-700 transition-colors">
                         <ThumbsUp size={14} /> Confirm
@@ -2021,12 +2019,12 @@ const App: React.FC = () => {
               </div>
             ))}
             {isProcessing && <div className="chat-bubble-cupid p-3 w-12"><div className="w-2 h-2 rounded-full bg-[var(--theme-text-subtle,#747474)] animate-pulse" /></div>}
-            <div ref={emotionalBottomRef} />
+            <div ref={vibeBottomRef} />
           </div>
           {!verdict && (
             <div className="mt-4 flex gap-2">
-              <input className="flex-1 min-w-0 bg-[var(--theme-surface,#141414)] rounded px-3 text-base md:text-sm text-[var(--theme-text,#F0F6F7)] outline-none border border-[var(--theme-border,#2a2a2a)] focus:border-[var(--theme-border-hover,#3a3a3a)] h-11 md:h-10" value={userInput} onChange={e => setUserInput(e.target.value)} onKeyPress={e => e.key === 'Enter' && handleEmotionalUpdateChat()} placeholder="Share your thoughts..." />
-              <button onClick={handleEmotionalUpdateChat} className="bg-[var(--theme-surface,#141414)] text-[var(--theme-text,#F0F6F7)] w-11 h-11 md:w-10 md:h-10 shrink-0 flex items-center justify-center rounded border border-[var(--theme-border,#2a2a2a)] hover:border-[var(--theme-border-hover,#3a3a3a)] transition-colors"><Send size={16} /></button>
+              <input className="flex-1 min-w-0 bg-[var(--theme-surface,#141414)] rounded px-3 text-base md:text-sm text-[var(--theme-text,#F0F6F7)] outline-none border border-[var(--theme-border,#2a2a2a)] focus:border-[var(--theme-border-hover,#3a3a3a)] h-11 md:h-10" value={userInput} onChange={e => setUserInput(e.target.value)} onKeyPress={e => e.key === 'Enter' && handleVibeCheckChat()} placeholder="Spill it..." />
+              <button onClick={handleVibeCheckChat} className="bg-[var(--theme-surface,#141414)] text-[var(--theme-text,#F0F6F7)] w-11 h-11 md:w-10 md:h-10 shrink-0 flex items-center justify-center rounded border border-[var(--theme-border,#2a2a2a)] hover:border-[var(--theme-border-hover,#3a3a3a)] transition-colors"><Send size={16} /></button>
             </div>
           )}
         </div>

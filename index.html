@@ -124,6 +124,13 @@
       border-bottom: 1px solid var(--theme-primary, var(--text-subtle));
       border-right: 1px solid var(--theme-primary, var(--text-subtle));
     }
+
+    /* Pulsing glow for the primary sign-up CTA */
+    @keyframes hrtless-pulse-glow {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(236, 72, 153, 0.6), 0 0 20px rgba(236, 72, 153, 0.3); }
+      50% { box-shadow: 0 0 0 8px rgba(236, 72, 153, 0), 0 0 30px rgba(236, 72, 153, 0.5); }
+    }
+    .animate-hrtless-pulse { animation: hrtless-pulse-glow 2s ease-in-out infinite; }
   </style>
 <script type="importmap">
 {

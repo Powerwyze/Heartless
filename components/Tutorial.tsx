@@ -46,7 +46,7 @@ const tutorialSteps: TutorialStep[] = [
   },
   {
     title: 'Track Interactions',
-    description: 'Log events with Damage or Growth. Use Emotional Update for AI analysis.',
+    description: 'Log events with Damage or Growth. Use Vibe Check for AI analysis.',
     target: '[data-tutorial="actions"]',
     position: 'left',
     arrow: 'right',

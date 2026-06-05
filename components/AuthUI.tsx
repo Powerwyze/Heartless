@@ -115,9 +115,13 @@ export const AuthUI: React.FC<AuthUIProps> = ({ onAuthSuccess }) => {
               type="submit"
               disabled={isLoading}
               style={{ touchAction: 'manipulation' }}
-              className="w-full py-3 bg-[var(--theme-surface,#141414)] text-[var(--theme-text,#F0F6F7)] font-mono text-xs uppercase tracking-wide hover:bg-[var(--theme-bg-alt,#111111)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors border border-[var(--theme-border,#2a2a2a)] hover:border-[var(--theme-border-hover,#3a3a3a)] rounded"
+              className={
+                isSignUp
+                  ? 'w-full py-4 px-6 bg-gradient-to-r from-pink-500 to-rose-500 text-white font-mono text-base md:text-lg font-bold uppercase tracking-wider rounded-lg shadow-lg disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] transition-transform animate-hrtless-pulse'
+                  : 'w-full py-3 bg-[var(--theme-surface,#141414)] text-[var(--theme-text,#F0F6F7)] font-mono text-xs uppercase tracking-wide hover:bg-[var(--theme-bg-alt,#111111)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors border border-[var(--theme-border,#2a2a2a)] hover:border-[var(--theme-border-hover,#3a3a3a)] rounded'
+              }
             >
-              {isLoading ? 'Loading...' : isSignUp ? 'Sign Up' : 'Log In'}
+              {isLoading ? 'Loading...' : isSignUp ? 'Join HRTLESS' : 'Log In'}
             </button>
           </form>
 
