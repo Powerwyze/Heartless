@@ -4,6 +4,7 @@ import { Partner, RelationshipType, InteractionLog, AppState, LogType, Trait, Pr
 import { INITIAL_PARTNERS } from './constants';
 import { PixelButton as ModernButton, CompassionMeter, RelationshipMeter, StatBar, TagPill, RadarChart, Modal, PokedexScreen, PokedexLED, TabHeader, HrtlessLogo } from './components/RetroUI';
 import { CATEGORY_CONFIG, CATEGORY_ORDER, type RelationshipCategory } from './lib/categories';
+import { getTarotImage } from './lib/tarotImages';
 import { PRDView } from './components/PRDView';
 import { HeartlessAIService } from './services/geminiService';
 import { onAuthStateChange, signOut as firebaseSignOut, deleteAccount as deleteFirebaseAccount } from './services/authService';
@@ -1646,18 +1647,15 @@ const App: React.FC = () => {
                             {compatibility.tarotDeck.map((card, index) => {
                               const isSelected = compatibility.tarotSelected.includes(card);
                               const isRevealed = isSelected;
-                              const isMajor = majorArcanaSet.has(card);
-                              const cardSrc = isRevealed && isMajor ? `/tarot/${tarotSlug(card)}.png` : '/tarot/back.png';
-                              const suit = getTarotSuit(card);
                               const isDealt = index < tarotDealCount;
                               return (
                                 <button
                                   key={card}
                                   onClick={() => handleSelectTarotCard(card)}
-                                  className={`h-16 rounded border-2 text-[9px] font-mono uppercase tracking-wide transition-all duration-300 ${
+                                  className={`relative aspect-[2/3] rounded-md overflow-hidden border-2 transition-all duration-300 ${
                                     isRevealed
-                                      ? 'border-pink-500/50 bg-pink-950/20 text-[var(--theme-text,#F0F6F7)] shadow-[0_0_8px_rgba(236,72,153,0.15)]'
-                                      : 'border-[var(--theme-border,#2a2a2a)] bg-[var(--theme-bg-alt,#111111)] text-[var(--theme-text-subtle,#747474)] hover:border-pink-500/30'
+                                      ? 'border-pink-500/70 shadow-[0_0_12px_rgba(236,72,153,0.4)]'
+                                      : 'border-[var(--theme-border,#2a2a2a)] hover:border-pink-500/40'
                                   }`}
                                   style={{
                                     opacity: isDealt ? 1 : 0,
@@ -1665,17 +1663,34 @@ const App: React.FC = () => {
                                     transitionDelay: `${index * 60}ms`,
                                   }}
                                   disabled={isTarotLoading || isTarotDealing || !isDealt || compatibility.tarotSelected.length >= 3 || !compatibility.tarotDeck.length}
+                                  title={isRevealed ? card : 'Tap to reveal'}
                                 >
-                                  <div className="flex flex-col items-center justify-center gap-1">
-                                    {isRevealed && !isMajor ? (
-                                      <div className="w-8 h-10 rounded border border-[var(--theme-border,#2a2a2a)] bg-[var(--theme-bg-alt,#111111)] flex items-center justify-center text-[8px] text-[var(--theme-text,#F0F6F7)]">
-                                        {suit ? suit[0] : 'M'}
+                                  {isRevealed ? (
+                                    <>
+                                      <img
+                                        src={getTarotImage(card)}
+                                        alt={card}
+                                        loading="lazy"
+                                        className="absolute inset-0 w-full h-full object-cover"
+                                        onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+                                      />
+                                      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/50 to-transparent px-1 py-1">
+                                        <div className="text-[7px] font-mono uppercase tracking-tight text-white text-center leading-tight">{card}</div>
                                       </div>
-                                    ) : (
-                                      <img src={cardSrc} alt={card} className="w-8 h-10 object-contain" />
-                                    )}
-                                    {isRevealed ? (isMajor ? card : card) : 'Card'}
-                                  </div>
+                                    </>
+                                  ) : (
+                                    <div className="absolute inset-0 bg-[var(--theme-bg-alt,#111111)] flex items-center justify-center">
+                                      <img
+                                        src="/tarot/back.png"
+                                        alt="Card back"
+                                        className="w-full h-full object-cover opacity-90"
+                                        onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+                                      />
+                                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                        <div className="text-[9px] font-mono uppercase tracking-wider text-pink-400/80">hrtless</div>
+                                      </div>
+                                    </div>
+                                  )}
                                 </button>
                               );
                             })}
