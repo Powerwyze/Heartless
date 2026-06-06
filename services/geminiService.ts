@@ -239,12 +239,13 @@ ${base64Image ? "\nReference: Base the physical features (face, hair, skin tone,
     const prompt = `Give a quick compatibility fortune for ${userSign} and ${partnerSign} today.`;
     try {
       const response = await this.ai.models.generateContent({
-        model: 'gemini-3-flash-preview',
+        model: 'gemini-flash-latest',
         contents: prompt,
-        config: { systemInstruction }
+        config: { systemInstruction, temperature: 0.8, maxOutputTokens: 200 }
       });
       return response.text || "The stars are coy today. Try again later.";
-    } catch {
+    } catch (e) {
+      console.error('Horoscope generation failed:', e);
       return "The stars are coy today. Try again later.";
     }
   }
@@ -257,12 +258,13 @@ Cards: ${cards.join(', ')}
 Give a concise tarot reading based on the cards and the question.`;
     try {
       const response = await this.ai.models.generateContent({
-        model: 'gemini-3-flash-preview',
+        model: 'gemini-flash-latest',
         contents: prompt,
-        config: { systemInstruction }
+        config: { systemInstruction, temperature: 0.8, maxOutputTokens: 256 }
       });
       return response.text || "The cards whisper softly, but the message is still yours to choose.";
-    } catch {
+    } catch (e) {
+      console.error('Tarot reading failed:', e);
       return "The cards whisper softly, but the message is still yours to choose.";
     }
   }
