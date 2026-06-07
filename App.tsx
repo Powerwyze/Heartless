@@ -2052,7 +2052,7 @@ const App: React.FC = () => {
             {vibeChat.map((msg, i) => (
               <div key={i} className={`flex ${msg.role === 'Cupid' ? 'justify-start' : 'justify-end'}`}>
                 <div className={`max-w-[85%] p-3 ${msg.role === 'Cupid' ? 'chat-bubble-cupid' : 'chat-bubble-user'}`}>
-                  <p className="text-sm text-[var(--theme-text,#F0F6F7)] whitespace-pre-wrap leading-relaxed">{msg.text}</p>
+                  <p className="text-sm text-[var(--theme-text,#F0F6F7)] whitespace-pre-wrap break-words leading-relaxed">{msg.text}</p>
                   {i === vibeChat.length - 1 && verdict && (
                     <div className="mt-4 flex gap-2">
                       <button onClick={() => applyVerdict(true)} className="flex-1 bg-transparent hover:bg-green-950/30 text-green-400 py-2 rounded font-mono text-xs flex items-center justify-center gap-2 border border-green-900/50 hover:border-green-700 transition-colors">

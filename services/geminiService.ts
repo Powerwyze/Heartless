@@ -59,10 +59,20 @@ ${base64Image ? "\nReference: Base the physical features (face, hair, skin tone,
     }
 
     try {
-      const response = await this.ai.models.generateContent({
-        model: 'gemini-3.1-flash-image',
-        contents: { parts }
-      });
+      // Try Nano Banana 2 (Gemini 3.1 Flash Image) first, fall back to GA Nano Banana (2.5)
+      let response;
+      try {
+        response = await this.ai.models.generateContent({
+          model: 'gemini-3.1-flash-image-preview',
+          contents: { parts }
+        });
+      } catch (primaryErr) {
+        console.warn('Nano Banana 2 unavailable, falling back to gemini-2.5-flash-image', primaryErr);
+        response = await this.ai.models.generateContent({
+          model: 'gemini-2.5-flash-image',
+          contents: { parts }
+        });
+      }
 
       for (const part of response.candidates?.[0]?.content?.parts || []) {
         if (part.inlineData) {
@@ -177,20 +187,26 @@ ${base64Image ? "\nReference: Base the physical features (face, hair, skin tone,
   }
 
   async getCupidAdvice(partnerName: string, recentEvents: string[], compassionRatio: number): Promise<string> {
-    const systemInstruction = `You are Cupid, the hrtless Guide. You are supportive, wise, and slightly cheeky. 
+    const systemInstruction = `You are Cupid, the hrtless Guide. You are supportive, wise, and slightly cheeky.
     YOU ARE A FAIR JUDGE. If the user is being toxic, unfair, or overreacting, call them out nicely.
-    KEEP RESPONSES EXTREMELY SHORT (Max 15 words). 
-    Ask a punchy question about their feelings.`;
-    const prompt = `My friend's romantic interest ${partnerName} did this: ${recentEvents.join(', ')}. Cupid, react as a fair judge. Keep it short.`;
+    Respond in 1-2 complete sentences (max ~40 words). Always finish your sentence — never trail off.
+    End with a punchy question about their feelings.`;
+    const prompt = `My friend's romantic interest ${partnerName} did this: ${recentEvents.join(', ')}. Cupid, react as a fair judge in 1-2 complete sentences ending in a question.`;
     try {
       const response = await this.ai.models.generateContent({
         model: 'gemini-flash-latest',
         contents: prompt,
-        config: { systemInstruction, temperature: 0.7, maxOutputTokens: 256 }
+        config: {
+          systemInstruction,
+          temperature: 0.7,
+          maxOutputTokens: 1024,
+          thinkingConfig: { thinkingBudget: 0 }
+        }
       });
       return response.text || "How does that actually make you feel?";
-    } catch {
-      return "Tell me more, but keep it brief.";
+    } catch (e) {
+      console.error('Cupid advice failed:', e);
+      return "Tell me more — I'm listening.";
     }
   }
 
@@ -241,7 +257,12 @@ ${base64Image ? "\nReference: Base the physical features (face, hair, skin tone,
       const response = await this.ai.models.generateContent({
         model: 'gemini-flash-latest',
         contents: prompt,
-        config: { systemInstruction, temperature: 0.8, maxOutputTokens: 200 }
+        config: {
+          systemInstruction,
+          temperature: 0.8,
+          maxOutputTokens: 1024,
+          thinkingConfig: { thinkingBudget: 0 }
+        }
       });
       return response.text || "The stars are coy today. Try again later.";
     } catch (e) {
@@ -260,7 +281,12 @@ Give a concise tarot reading based on the cards and the question.`;
       const response = await this.ai.models.generateContent({
         model: 'gemini-flash-latest',
         contents: prompt,
-        config: { systemInstruction, temperature: 0.8, maxOutputTokens: 256 }
+        config: {
+          systemInstruction,
+          temperature: 0.8,
+          maxOutputTokens: 1024,
+          thinkingConfig: { thinkingBudget: 0 }
+        }
       });
       return response.text || "The cards whisper softly, but the message is still yours to choose.";
     } catch (e) {
