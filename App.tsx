@@ -1014,15 +1014,24 @@ const App: React.FC = () => {
     setIsProcessing(true);
 
     try {
-      if (newHistory.length < 4) {
-        const response = await ai.getCupidAdvice(selectedPartner?.name || 'them', [userMsg], 0.5);
+      // Render verdict after the user has had a real conversation (3+ user messages).
+      const userMsgCount = newHistory.filter(m => m.role === 'User').length;
+      const ratio = selectedPartner ? selectedPartner.currentCompassion / Math.max(1, selectedPartner.totalCompassion) : 0.5;
+      if (userMsgCount < 3) {
+        const response = await ai.getCupidAdvice(selectedPartner?.name || 'them', newHistory, ratio);
         setVibeChat(prev => [...prev, { role: 'Cupid', text: response }]);
       } else {
         const result = await ai.getEmotionalVerdict(selectedPartner?.name || 'them', newHistory);
-        setVibeChat(prev => [...prev, { role: 'Cupid', text: `${result.reason}\n\nAdjust by ${result.delta} compassion units?` }]);
+        const deltaLabel = result.delta === 0
+          ? 'No change to hearts.'
+          : result.delta > 0
+            ? `Add ${result.delta} heart${Math.abs(result.delta) === 1 ? '' : 's'}?`
+            : `Remove ${Math.abs(result.delta)} heart${Math.abs(result.delta) === 1 ? '' : 's'}?`;
+        setVibeChat(prev => [...prev, { role: 'Cupid', text: `${result.reason}\n\n${deltaLabel}` }]);
         setVerdict(result);
       }
-    } catch {
+    } catch (e) {
+      console.error('Vibe Check chat failed:', e);
       setVibeChat(prev => [...prev, { role: 'Cupid', text: "Signal interference. Try again, sweetie." }]);
     } finally {
       setIsProcessing(false);

@@ -186,27 +186,41 @@ ${base64Image ? "\nReference: Base the physical features (face, hair, skin tone,
     }
   }
 
-  async getCupidAdvice(partnerName: string, recentEvents: string[], compassionRatio: number): Promise<string> {
-    const systemInstruction = `You are Cupid, the hrtless Guide. You are supportive, wise, and slightly cheeky.
-    YOU ARE A FAIR JUDGE. If the user is being toxic, unfair, or overreacting, call them out nicely.
-    Respond in 1-2 complete sentences (max ~40 words). Always finish your sentence — never trail off.
-    End with a punchy question about their feelings.`;
-    const prompt = `My friend's romantic interest ${partnerName} did this: ${recentEvents.join(', ')}. Cupid, react as a fair judge in 1-2 complete sentences ending in a question.`;
+  async getCupidAdvice(
+    partnerName: string,
+    convo: { role: string, text: string }[],
+    compassionRatio: number
+  ): Promise<string> {
+    const systemInstruction = `You are Cupid — the hrtless Guide. You're a sharp, warm, slightly cheeky best-friend therapist who happens to be a fair judge.
+
+Your job in this Vibe Check chat: help the user process what happened with ${partnerName} and decide if it should affect their hearts.
+
+Rules:
+- This is an ONGOING CONVERSATION. Reference what was said earlier. Never restart or repeat yourself.
+- Be a FAIR JUDGE: if the user is overreacting, being toxic, or unfair to ${partnerName}, gently push back. If ${partnerName} actually messed up, validate them.
+- 1–3 complete sentences. ~50 words max. Always finish your thought — never trail off mid-sentence.
+- End with ONE focused follow-up question that moves the conversation forward (not generic "how does that feel?").
+- Sound human and specific. No therapy-speak, no "I hear you," no "that must be hard."
+- Use ${partnerName}'s name occasionally. Match the user's energy (chill if they're chill, sharp if they're sharp).`;
+
+    const history = convo.map(m => `${m.role === 'Cupid' ? 'Cupid' : 'User'}: ${m.text}`).join('\n');
+    const prompt = `Partner being discussed: ${partnerName}\nCurrent heart level: ${Math.round(compassionRatio * 100)}%\n\nConversation so far:\n${history}\n\nReply as Cupid — their next message in this chat. 1–3 complete sentences ending in a sharp follow-up question.`;
+
     try {
       const response = await this.ai.models.generateContent({
         model: 'gemini-flash-latest',
         contents: prompt,
         config: {
           systemInstruction,
-          temperature: 0.7,
+          temperature: 0.8,
           maxOutputTokens: 1024,
           thinkingConfig: { thinkingBudget: 0 }
         }
       });
-      return response.text || "How does that actually make you feel?";
+      return response.text?.trim() || "Walk me through that one more time — what exactly set you off?";
     } catch (e) {
       console.error('Cupid advice failed:', e);
-      return "Tell me more — I'm listening.";
+      return "Signal flickered. Say that again?";
     }
   }
 
@@ -229,10 +243,11 @@ ${base64Image ? "\nReference: Base the physical features (face, hair, skin tone,
 
     try {
       const response = await this.ai.models.generateContent({
-        model: 'gemini-3-flash-preview',
+        model: 'gemini-flash-latest',
         contents: prompt,
         config: {
           responseMimeType: "application/json",
+          thinkingConfig: { thinkingBudget: 0 },
           responseSchema: {
             type: Type.OBJECT,
             properties: {
