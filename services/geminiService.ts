@@ -213,8 +213,7 @@ Rules:
         config: {
           systemInstruction,
           temperature: 0.8,
-          maxOutputTokens: 1024,
-          thinkingConfig: { thinkingBudget: 0 }
+          maxOutputTokens: 1024
         }
       });
       return response.text?.trim() || "Walk me through that one more time — what exactly set you off?";
@@ -247,7 +246,6 @@ Rules:
         contents: prompt,
         config: {
           responseMimeType: "application/json",
-          thinkingConfig: { thinkingBudget: 0 },
           responseSchema: {
             type: Type.OBJECT,
             properties: {
@@ -275,8 +273,7 @@ Rules:
         config: {
           systemInstruction,
           temperature: 0.8,
-          maxOutputTokens: 1024,
-          thinkingConfig: { thinkingBudget: 0 }
+          maxOutputTokens: 1024
         }
       });
       return response.text || "The stars are coy today. Try again later.";
@@ -299,8 +296,7 @@ Give a concise tarot reading based on the cards and the question.`;
         config: {
           systemInstruction,
           temperature: 0.8,
-          maxOutputTokens: 1024,
-          thinkingConfig: { thinkingBudget: 0 }
+          maxOutputTokens: 1024
         }
       });
       return response.text || "The cards whisper softly, but the message is still yours to choose.";
